@@ -2,7 +2,12 @@
 
 (setq proj-debug-state t)
 (setq proj-arch "gcc")
+(setq proj-remote nil)
+(setq proj-subproj nil)
 
+(defun proj-localhost()(interactive) (setq proj-remote nil))
+(defun proj-dev00()(interactive) (setq proj-remote "pa-dev00"))
+(defun proj-dev01()(interactive) (setq proj-remote "pa-dev01"))
 (defun proj-arch-gcc ()(interactive) (setq proj-arch "gcc"))
 (defun proj-arch-icc ()(interactive) (setq proj-arch "icc"))
 (defun proj-arch-avx ()(interactive) (setq proj-arch "avx512"))
@@ -18,7 +23,7 @@
           ((and (string= arch "icc") (not debug)) (setq archDir "build/x86_64/Release'"))
 	  (t                                      (setq archDir "invalid-build-arch"))
     )
-    (when (file-directory-p (concat baseDir relDir archDir)) 
+    (when (file-directory-p (concat baseDir relDir)) 
           (setq return (concat baseDir relDir archDir)))
 )
 (defun proj-ppa-build-dir (arch debug) (proj-generic-build-dirs "Sequel/ppa" arch debug))
@@ -36,19 +41,34 @@
 	  (t                       (setq archDir "invalid-arch"))
     )
     (if debug (setq buildDir "Debug") (setq buildDir "Release"))
-    (when (file-directory-p (concat baseDir relDir archDir buildDir)) 
+    (when (file-directory-p (concat baseDir relDir)) 
           (setq return (concat baseDir relDir archDir buildDir)))
 )
 
-(defun proj-ppa()        (interactive)(fset 'proj-build-dir 'proj-ppa-build-dir))
-(defun proj-cpluspus()   (interactive)(fset 'proj-build-dir 'proj-cplusplus-build-dir))
-(defun proj-seq-common() (interactive)(fset 'proj-build-dir 'proj-cc-build-dir))
-(defun proj-basecaller() (interactive)(fset 'proj-build-dir 'proj-bc-build-dir))
-(defun proj-basewriter() (interactive)(fset 'proj-build-dir 'proj-bw-build-dir))
-(defun proj-acquisition()(interactive)(fset 'proj-build-dir 'proj-acq-build-dir))
+(defun proj-ppa()        (interactive) (setq proj-subproj "ppa")(fset 'proj-build-dir 'proj-ppa-build-dir))
+(defun proj-cpluspus()   (interactive) (setq proj-subproj "cplusplus")(fset 'proj-build-dir 'proj-cplusplus-build-dir))
+(defun proj-seq-common() (interactive) (setq proj-subproj "common")(fset 'proj-build-dir 'proj-cc-build-dir))
+(defun proj-basecaller() (interactive) (setq proj-subproj "basecaller")(fset 'proj-build-dir 'proj-bc-build-dir))
+(defun proj-basewriter() (interactive) (setq proj-subproj "basewriter")(fset 'proj-build-dir 'proj-bw-build-dir))
+(defun proj-acquisition()(interactive) (setq proj-subproj "acquisition")(fset 'proj-build-dir 'proj-acq-build-dir))
+
+(defun proj-valid()(interactive)
+    (setq valid t)
+    (unless (proj-build-dir proj-arch proj-debug-state) (setq valid nil))
+    ;; Only gcc allowed locally
+    ( when (and (not (string= proj-arch "gcc"))(not proj-remote))
+	(setq valid nil)
+    )
+    ( unless (string= proj-subproj "basecaller")
+	(when (or (string= proj-arch "k1om")(string= proj-arch "avx512")) (setq valid nil))
+        (when (and (string= proj-arch "gcc")(not(proj-debug))) (setq valid nil))
+    )
+    valid
+)
 
 (setq multi-compile-alist '(
-    ((proj-build-dir proj-arch proj-debug-state) .
+   ;; ((proj-build-dir proj-arch proj-debug-state) .
+    ((and (proj-valid)(not proj-remote)) .
 	(("RefreshIndex" "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .; rc -J ." (proj-build-dir "gcc" t))
 	 ("Build" "make -j12" (proj-build-dir proj-arch proj-debug-state))
 	 ("Clean" "make clean" (proj-build-dir proj-arch proj-debug-state))
@@ -58,9 +78,20 @@
 
 (defun proj-curr-build-dir ()(interactive) (print (proj-build-dir proj-arch proj-debug-state)))
 (defun proj-info ()(interactive) (
-	print (concat "Type: " proj-arch
-		      ", Debug: " (if proj-debug-state "true" "false")
+	print (concat "Host: " (if proj-remote proj-remote "localhost")
+		      ", Project: " proj-subproj
+		      ", Type: " proj-arch
+		      " " (if proj-debug-state "Debug" "Release")
 		      ", BuildDir: " (proj-build-dir proj-arch proj-debug-state)
 )))
 
-(global-set-key (kbd "C-S-p") 'multi-compile-run)
+(defun proj-compile-private()
+       (unless (proj-valid) (setq proj-bad-config "Invalid project configuration.  Check directory and 'proj-info'")(throw 'proj-bad-config t))
+       (multi-compile-run)
+)
+
+(defun proj-compile()(interactive)
+       (when (catch 'proj-bad-config (proj-compile-private)) (print proj-bad-config))
+)
+
+(global-set-key (kbd "C-S-p") 'proj-compile)
