@@ -2,7 +2,7 @@
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
 
-(add-to-list 'load-path "~/emacs-config-repo/find-file-in-project")
+(add-to-list 'load-path (expand-file-name "~/emacs-config-repo/dependencies/multi-compile"))
 
 (load-file "~/emacs-config-repo/windows.el")
 (load-file "~/emacs-config-repo/compile.el")
