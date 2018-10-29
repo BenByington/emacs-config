@@ -182,15 +182,16 @@
 
 (defun multi-compile--fill-template (format-string)
   "Apply multi-compile-template to FORMAT-STRING."
+  (setq internal-fmt-string (if (stringp format-string) format-string (funcall format-string)))
   (dolist (template multi-compile-template)
-    (while (string-match (car template) format-string)
+    (while (string-match (car template) internal-fmt-string)
       (let ((new-text (save-match-data (eval (cdr template)))))
-        (setq format-string
+        (setq internal-fmt-string
               (replace-match
                (if new-text new-text
                  (concat "not-found-" (substring (car template) 1)))
-               t nil format-string)))))
-  format-string)
+               t nil internal-fmt-string)))))
+  internal-fmt-string)
 
 (defun multi-compile--check-mode (mode-pattern filename)
   "Check that the MODE-PATTERN and the FILENAME match."
