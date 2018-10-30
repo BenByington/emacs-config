@@ -38,3 +38,5 @@
 ;; c-mode-common-hook is also called by c++-mode
 (add-hook 'c-mode-common-hook #'setup-flycheck-rtags)
 
+(rtags-start-process-unless-running)
+
