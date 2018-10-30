@@ -1,3 +1,5 @@
+(require 'multi-compile)
+
 (defun pb-base-dir ()(locate-dominating-file default-directory ".git"))
 
 (setq proj-debug-state t)
@@ -6,8 +8,8 @@
 (setq proj-subproj nil)
 
 (defun proj-localhost()(interactive) (setq proj-remote nil))
-(defun proj-dev00()(interactive) (setq proj-remote "pa-dev00"))
-(defun proj-dev01()(interactive) (setq proj-remote "pa-dev01"))
+(defun proj-dev00()(interactive) (setq proj-remote "metallica"))
+(defun proj-dev01()(interactive) (setq proj-remote "nirvana"))
 (defun proj-arch-gcc ()(interactive) (setq proj-arch "gcc"))
 (defun proj-arch-icc ()(interactive) (setq proj-arch "icc"))
 (defun proj-arch-avx ()(interactive) (setq proj-arch "avx512"))
@@ -20,7 +22,7 @@
     (setq relDir (concat proj "/"))
     (cond ((and (string= arch "gcc") debug)       (setq archDir "build/x86_64/Debug_gcc"))
           ((and (string= arch "icc") debug)       (setq archDir "build/x86_64/Debug"))
-          ((and (string= arch "icc") (not debug)) (setq archDir "build/x86_64/Release'"))
+          ((and (string= arch "icc") (not debug)) (setq archDir "build/x86_64/Release"))
 	  (t                                      (setq archDir "invalid-build-arch"))
     )
     (when (file-directory-p (concat baseDir relDir)) 
@@ -66,15 +68,35 @@
     valid
 )
 
+  ;;(setq tmp (concat "ssh " proj-remote " 'cd " (proj-build-dir proj-arch proj-debug-state) " \; " (pb-base-dir) "sync_and_build.sh'"))
+  ;;(print tmp)
+  ;;tmp
+(defun proj-remote-build()
+       (concat "ssh " proj-remote " 'cd " (proj-build-dir proj-arch proj-debug-state) "\; " (pb-base-dir) "sync_and_build.sh'")
+)
+(defun proj-remote-clean()
+    (concat "ssh " proj-remote " 'cd " (proj-build-dir proj-arch proj-debug-state) "\; make clean'")
+)
+(defun proj-remote-cleanbuild()
+    (concat "ssh " proj-remote " 'cd " (proj-build-dir proj-arch proj-debug-state) "\; make clean\; " (pb-base-dir) "sync_and_build.sh'")
+)
 (setq multi-compile-alist '(
-   ;; ((proj-build-dir proj-arch proj-debug-state) .
+    ((proj-valid) .
+	(("RefreshIndex" "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .; rc -J ." (proj-build-dir "gcc" t)))
+    )
     ((and (proj-valid)(not proj-remote)) .
-	(("RefreshIndex" "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .; rc -J ." (proj-build-dir "gcc" t))
-	 ("Build" "make -j12" (proj-build-dir proj-arch proj-debug-state))
+	(("Build" "make -j12" (proj-build-dir proj-arch proj-debug-state))
 	 ("Clean" "make clean" (proj-build-dir proj-arch proj-debug-state))
 	 ("CleanBuild" "make clean; make -j12" (proj-build-dir proj-arch proj-debug-state))
-         ("Run" "pwd" (proj-build-dir proj-arch proj-debug-state)))
-)))
+         ("Run" "echo 'not implemented'" (proj-build-dir proj-arch proj-debug-state)))
+    )
+    ((and (proj-valid) proj-remote) .
+	(("Build" . proj-remote-build)
+	 ("Clean" . proj-remote-clean)
+	 ("CleanBuild" . proj-remote-cleanbuild)
+         ("Run" "echo 'not implemented'" (proj-build-dir proj-arch proj-debug-state)))
+    )
+))
 
 (defun proj-curr-build-dir ()(interactive) (print (proj-build-dir proj-arch proj-debug-state)))
 (defun proj-info ()(interactive) (
@@ -85,6 +107,7 @@
 		      ", BuildDir: " (proj-build-dir proj-arch proj-debug-state)
 )))
 
+(setq proj-bad-config nil)
 (defun proj-compile-private()
        (unless (proj-valid) (setq proj-bad-config "Invalid project configuration.  Check directory and 'proj-info'")(throw 'proj-bad-config t))
        (multi-compile-run)
@@ -95,3 +118,8 @@
 )
 
 (global-set-key (kbd "C-S-p") 'proj-compile)
+
+(proj-ppa)
+(proj-dev00)
+(proj-arch-gcc)
+(proj-release)
