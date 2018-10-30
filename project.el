@@ -68,43 +68,88 @@
     valid
 )
 
-  ;;(setq tmp (concat "ssh " proj-remote " 'cd " (proj-build-dir proj-arch proj-debug-state) " \; " (pb-base-dir) "sync_and_build.sh'"))
-  ;;(print tmp)
-  ;;tmp
+(setq proj-compile-args nil)
+(defun proj-compile-args(arg)(interactive (list (read-string "Compile Args: " proj-compile-args))) 
+    (if (string= arg "")
+       (setq proj-compile-args nil)
+       (setq proj-compile-args arg)
+    )
+)
+(setq proj-run-args nil)
+(defun proj-run-args(arg)(interactive (list (read-string "Run Command: " proj-run-args))) 
+    (if (string= arg "")
+       (setq proj-run-args nil)
+       (setq proj-run-args arg)
+    )
+)
+
 (defun proj-remote-build()
-       (concat "ssh " proj-remote " 'cd " (proj-build-dir proj-arch proj-debug-state) "\; " (pb-base-dir) "sync_and_build.sh'")
+  (concat "ssh " proj-remote " 'cd "
+	  (proj-build-dir proj-arch proj-debug-state) "\; "
+	  (pb-base-dir) "sync_and_build.sh " proj-compile-args"'")
 )
 (defun proj-remote-clean()
-    (concat "ssh " proj-remote " 'cd " (proj-build-dir proj-arch proj-debug-state) "\; make clean'")
+  (concat "ssh " proj-remote " 'cd "
+	  (proj-build-dir proj-arch proj-debug-state) "\; make clean'")
 )
 (defun proj-remote-cleanbuild()
-    (concat "ssh " proj-remote " 'cd " (proj-build-dir proj-arch proj-debug-state) "\; make clean\; " (pb-base-dir) "sync_and_build.sh'")
+  (concat "ssh " proj-remote " 'cd "
+	  (proj-build-dir proj-arch proj-debug-state)
+	  "\; make clean\; " (pb-base-dir)
+	  "sync_and_build.sh " proj-compile-args"'")
 )
+(defun proj-remote-run()
+  (if (not proj-run-args)
+      (print "No run command specified")
+      (concat "ssh " proj-remote " 'cd "
+	  (proj-build-dir proj-arch proj-debug-state) "\; "
+	  proj-run-args "'")
+  )
+)
+
+(defun proj-build()
+  (concat "make -j12 " proj-compile-args)
+)
+(defun proj-clean()
+  (concat "make clean")
+)
+(defun proj-cleanbuild()
+  (concat "make clean\; make -j12" proj-compile-args)
+)
+(defun proj-run()
+  (if (not proj-run-args)
+      (print "No build target specified")
+       proj-run-args
+  )
+)
+
 (setq multi-compile-alist '(
     ((proj-valid) .
 	(("RefreshIndex" "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .; rc -J ." (proj-build-dir "gcc" t)))
     )
     ((and (proj-valid)(not proj-remote)) .
-	(("Build" "make -j12" (proj-build-dir proj-arch proj-debug-state))
-	 ("Clean" "make clean" (proj-build-dir proj-arch proj-debug-state))
-	 ("CleanBuild" "make clean; make -j12" (proj-build-dir proj-arch proj-debug-state))
-         ("Run" "echo 'not implemented'" (proj-build-dir proj-arch proj-debug-state)))
+	(("Build" proj-build (proj-build-dir proj-arch proj-debug-state))
+	 ("Clean" proj-clean (proj-build-dir proj-arch proj-debug-state))
+	 ("CleanBuild" proj-cleanbuild (proj-build-dir proj-arch proj-debug-state))
+         ("Run" proj-run (proj-build-dir proj-arch proj-debug-state)))
     )
     ((and (proj-valid) proj-remote) .
 	(("Build" . proj-remote-build)
 	 ("Clean" . proj-remote-clean)
 	 ("CleanBuild" . proj-remote-cleanbuild)
-         ("Run" "echo 'not implemented'" (proj-build-dir proj-arch proj-debug-state)))
+         ("Run" . proj-remote-run))
     )
 ))
 
 (defun proj-curr-build-dir ()(interactive) (print (proj-build-dir proj-arch proj-debug-state)))
 (defun proj-info ()(interactive) (
 	print (concat "Host: " (if proj-remote proj-remote "localhost")
-		      ", Project: " proj-subproj
-		      ", Type: " proj-arch
+		      "\n Project: " proj-subproj
+		      "\n Type: " proj-arch
 		      " " (if proj-debug-state "Debug" "Release")
-		      ", BuildDir: " (proj-build-dir proj-arch proj-debug-state)
+		      "\n BuildDir: " (proj-build-dir proj-arch proj-debug-state)
+		      (when proj-compile-args (concat "\n Compile Args: " proj-compile-args))
+		      (when proj-run-args (concat "\n Run Command: " proj-run-args))
 )))
 
 (setq proj-bad-config nil)
@@ -114,6 +159,7 @@
 )
 
 (defun proj-compile()(interactive)
+       (save-some-buffers)
        (when (catch 'proj-bad-config (proj-compile-private)) (print proj-bad-config))
 )
 
