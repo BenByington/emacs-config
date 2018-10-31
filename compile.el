@@ -1,6 +1,6 @@
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 
-(setq compilation-scroll-output t)
+(setq compilation-scroll-output 'first-error)
 
 (setq ediff-window-setup-function #'ediff-setup-windows-plain)
 (setq ediff-split-window-function 'split-window-horizontally)

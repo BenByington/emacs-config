@@ -10,6 +10,12 @@
 (tabbar-mode t)
 (winner-mode t)
 (electric-pair-mode t)
+;; disable for minibuffer
+(defun detect-mini-buffer (char) (minibufferp))
+(setq electric-pair-inhibit-predicate #'detect-mini-buffer)
+
+;; If slowdowns detected, upgrade to Emacs 26 and use 'display-line-numbers-mode
+(linum-mode)
 
 (require 'ivy)
 (ivy-mode 1)
