@@ -6,6 +6,8 @@
 (require 'evil)
 (evil-mode 1)
 (evil-select-search-module 'evil-search-module 'evil-search)
+(require 'evil-matchit)
+(global-evil-matchit-mode)
 
 (tabbar-mode t)
 (winner-mode t)
@@ -15,7 +17,7 @@
 (setq electric-pair-inhibit-predicate #'detect-mini-buffer)
 
 ;; If slowdowns detected, upgrade to Emacs 26 and use 'display-line-numbers-mode
-(linum-mode)
+(global-linum-mode)
 
 (require 'ivy)
 (ivy-mode 1)

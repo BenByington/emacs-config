@@ -8,8 +8,8 @@
 (setq proj-subproj nil)
 
 (defun proj-localhost()(interactive) (setq proj-remote nil))
-(defun proj-dev00()(interactive) (setq proj-remote "metallica"))
-(defun proj-dev01()(interactive) (setq proj-remote "nirvana"))
+(defun proj-dev00()(interactive) (setq proj-remote "nirvana"))
+(defun proj-dev01()(interactive) (setq proj-remote "metallica"))
 (defun proj-arch-gcc ()(interactive) (setq proj-arch "gcc"))
 (defun proj-arch-icc ()(interactive) (setq proj-arch "icc"))
 (defun proj-arch-avx ()(interactive) (setq proj-arch "avx512"))
