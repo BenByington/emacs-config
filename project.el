@@ -63,7 +63,7 @@
     )
     ( unless (string= proj-subproj "basecaller")
 	(when (or (string= proj-arch "k1om")(string= proj-arch "avx512")) (setq valid nil))
-        (when (and (string= proj-arch "gcc")(not(proj-debug))) (setq valid nil))
+        (when (and (string= proj-arch "gcc")(not proj-debug-state )) (setq valid nil))
     )
     valid
 )
@@ -108,13 +108,13 @@
 )
 
 (defun proj-build()
-  (concat "make -j12 " proj-compile-args)
+  (concat "make -j8 " proj-compile-args)
 )
 (defun proj-clean()
   (concat "make clean")
 )
 (defun proj-cleanbuild()
-  (concat "make clean\; make -j12" proj-compile-args)
+  (concat "make clean\; make -j8" proj-compile-args)
 )
 (defun proj-run()
   (if (not proj-run-args)
@@ -150,6 +150,7 @@
 		      "\n BuildDir: " (proj-build-dir proj-arch proj-debug-state)
 		      (when proj-compile-args (concat "\n Compile Args: " proj-compile-args))
 		      (when proj-run-args (concat "\n Run Command: " proj-run-args))
+                      (if (proj-valid) "\nValid Setup" "\nINVALID Setup")
 )))
 
 (setq proj-bad-config nil)
@@ -166,6 +167,99 @@
 (global-set-key (kbd "C-S-p") 'proj-compile)
 
 (proj-ppa)
-(proj-dev00)
+(proj-dev01)
 (proj-arch-gcc)
 (proj-release)
+
+(require 'widget)
+     
+(eval-when-compile
+   (require 'wid-edit))
+
+(defun proj-configure()
+    "Create the widgets from the Widget manual."
+    (interactive)
+    (setq silly default-directory)
+    (switch-to-buffer "*Project Configuration*")
+    (let ((inhibit-read-only t))
+        (erase-buffer))
+    (remove-overlays)
+    (setq default-directory silly)
+    (widget-insert "Setup primary build configurations.\n\n")
+    (widget-insert "Project:\n")
+    (widget-create 'radio-button-choice
+        :value "PPA"
+        :notify (lambda (widget &rest ignore)
+		    (cond ((string= (widget-value widget) "PPA") (proj-ppa))
+			  ((string= (widget-value widget) "Basecaller") (proj-basecaller))
+			  ((string= (widget-value widget) "Basewriter") (proj-basewriter))
+			  ((string= (widget-value widget) "Acquisition") (proj-acquisition))
+			  ((string= (widget-value widget) "CPlusPlusAPI") (proj-cpluspus))
+			  ((string= (widget-value widget) "Common") (proj-seq-common))
+			  ( t (message "No Match")))
+		    (proj-info)
+		)
+        '(item "PPA" )
+        '(item "Basecaller")
+        '(item "Basewriter")
+        '(item "Acquisition")
+        '(item "CPlusPlusAPI")
+        '(item "Common"))
+    (widget-insert "\n")
+    (widget-insert "Compiler:\n")
+    (widget-create 'radio-button-choice
+        :value "icc"
+        :notify (lambda (widget &rest ignore)
+		    (cond ((string= (widget-value widget) "gcc") (proj-arch-gcc))
+			  ((string= (widget-value widget) "icc") (proj-arch-icc))
+			  ((string= (widget-value widget) "avx512") (proj-arch-avx))
+			  ((string= (widget-value widget) "k1om") (proj-arch-k1om))
+			  ( t (message "No Match")))
+		    (proj-info)
+		)
+        '(item "gcc" )
+        '(item "icc")
+        '(item "avx512")
+        '(item "k1om"))
+    (widget-insert "\n")
+    (widget-insert "Type:\n")
+    (widget-create 'radio-button-choice
+        :value "Release"
+        :notify (lambda (widget &rest ignore)
+		    (cond ((string= (widget-value widget) "Release") (proj-release))
+			  ((string= (widget-value widget) "Debug") (proj-debug))
+			  ( t (message "No Match")))
+		    (proj-info)
+		)
+        '(item "Release" )
+        '(item "Debug"))
+    (widget-insert "\n")
+    (widget-insert "Host:\n")
+    (widget-create 'radio-button-choice
+        :value "localhost"
+        :notify (lambda (widget &rest ignore)
+		    (cond ((string= (widget-value widget) "localhost") (proj-localhost))
+			  ((string= (widget-value widget) "dev00") (proj-dev00))
+			  ((string= (widget-value widget) "dev01") (proj-dev01))
+			  ( t (message "No Match")))
+		    (proj-info)
+		)
+        '(item "localhost" )
+        '(item "dev00")
+        '(item "dev01"))
+    (widget-insert "\n")
+    ;;(widget-create 'push-button
+    ;;    :notify (lambda (widget &rest ignore)
+    ;;              (proj-valid))
+    ;;              
+    ;;    "Apply Form")
+ 
+    ;;(widget-create 'push-button
+    ;;    :notify (lambda (&rest ignore)
+    ;;        (proj-configure))
+    ;;    "Reset Form")
+    ;;(widget-insert "\n")
+    ;;(use-local-map widget-keymap)
+    (widget-setup)
+)
+
