@@ -12,3 +12,6 @@
 (setq recentf-max-menu-items 25)
 (global-set-key "\C-x\ \C-r" 'recentf-open-files)
 
+(require 'magit)
+(global-set-key (kbd "C-S-<right>") 'magit-ediff-dwim) 
+
