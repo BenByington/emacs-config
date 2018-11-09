@@ -8,6 +8,7 @@
 (evil-select-search-module 'evil-search-module 'evil-search)
 (require 'evil-matchit)
 (global-evil-matchit-mode)
+(setq evil-ex-search-case 'sensitive)
 
 (tabbar-mode t)
 (winner-mode t)
