@@ -14,4 +14,17 @@
 
 (require 'magit)
 (global-set-key (kbd "C-S-<right>") 'magit-ediff-dwim) 
+(global-set-key (kbd "C-S-L") 'magit-log-head) 
+(global-set-key (kbd "C-S-D")
+    (lambda ()(interactive)
+        (setq current-prefix-arg '(4)) ; C-u
+        (call-interactively 'magit-diff-working-tree)
+    )
+) 
+;;(fset 'magit-log-select-pick-function 'magit-diff-range)
+;;(defun my-exp ()(interactive)
+;;       (magit-copy-section-value)
+;;       (magit-diff-range (magit-pop-revision-stack))
+;;)
+
 
