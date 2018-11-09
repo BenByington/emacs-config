@@ -2,20 +2,20 @@
 
 (defun pb-base-dir ()(locate-dominating-file default-directory ".git"))
 
-(setq proj-debug-state t)
+(setq proj-debug t)
 (setq proj-arch "gcc")
-(setq proj-remote nil)
+(setq proj-host "localhost")
 (setq proj-subproj nil)
 
-(defun proj-localhost()(interactive) (setq proj-remote nil))
-(defun proj-dev00()(interactive) (setq proj-remote "nirvana"))
-(defun proj-dev01()(interactive) (setq proj-remote "metallica"))
+(defun proj-localhost()(interactive) (setq proj-host "localhost"))
+(defun proj-dev00()(interactive) (setq proj-host "dev00"))
+(defun proj-dev01()(interactive) (setq proj-host "dev01"))
 (defun proj-arch-gcc ()(interactive) (setq proj-arch "gcc"))
 (defun proj-arch-icc ()(interactive) (setq proj-arch "icc"))
 (defun proj-arch-avx ()(interactive) (setq proj-arch "avx512"))
 (defun proj-arch-k1om ()(interactive)(setq proj-arch "k1om"))
-(defun proj-debug()(interactive) (setq proj-debug-state t))
-(defun proj-release()(interactive) (setq proj-debug-state nil))
+(defun proj-debug()(interactive) (setq proj-debug t))
+(defun proj-release()(interactive) (setq proj-debug nil))
 
 (defun proj-generic-build-dirs (proj arch debug)
     (setq baseDir (pb-base-dir))
@@ -47,23 +47,29 @@
           (setq return (concat baseDir relDir archDir buildDir)))
 )
 
-(defun proj-ppa()        (interactive) (setq proj-subproj "ppa")(fset 'proj-build-dir 'proj-ppa-build-dir))
-(defun proj-cpluspus()   (interactive) (setq proj-subproj "cplusplus")(fset 'proj-build-dir 'proj-cplusplus-build-dir))
-(defun proj-seq-common() (interactive) (setq proj-subproj "common")(fset 'proj-build-dir 'proj-cc-build-dir))
-(defun proj-basecaller() (interactive) (setq proj-subproj "basecaller")(fset 'proj-build-dir 'proj-bc-build-dir))
-(defun proj-basewriter() (interactive) (setq proj-subproj "basewriter")(fset 'proj-build-dir 'proj-bw-build-dir))
-(defun proj-acquisition()(interactive) (setq proj-subproj "acquisition")(fset 'proj-build-dir 'proj-acq-build-dir))
+(defun proj-ppa()        (interactive) (setq proj-subproj "PPA")(fset 'proj-build-dir 'proj-ppa-build-dir))
+(defun proj-cpluspus()   (interactive) (setq proj-subproj "CPlusPlusAPI")(fset 'proj-build-dir 'proj-cplusplus-build-dir))
+(defun proj-seq-common() (interactive) (setq proj-subproj "Common")(fset 'proj-build-dir 'proj-cc-build-dir))
+(defun proj-basecaller() (interactive) (setq proj-subproj "Basecaller")(fset 'proj-build-dir 'proj-bc-build-dir))
+(defun proj-basewriter() (interactive) (setq proj-subproj "Basewriter")(fset 'proj-build-dir 'proj-bw-build-dir))
+(defun proj-acquisition()(interactive) (setq proj-subproj "Acquisition")(fset 'proj-build-dir 'proj-acq-build-dir))
 
+(setq lasterror nil)
 (defun proj-valid()(interactive)
     (setq valid t)
-    (unless (proj-build-dir proj-arch proj-debug-state) (setq valid nil))
+    (setq lasterror nil)
+    (unless (proj-build-dir proj-arch proj-debug) (setq valid nil))
     ;; Only gcc allowed locally
-    ( when (and (not (string= proj-arch "gcc"))(not proj-remote))
+    ( unless (or valid lasterror)(setq lasterror "Something wrong with project build directory"))
+    ( when (and (not (string= proj-arch "gcc"))(string= "localhost" proj-host))
 	(setq valid nil)
     )
-    ( unless (string= proj-subproj "basecaller")
+    ( unless (or valid lasterror) (setq lasterror "Must use gcc on localhost"))
+    ( unless (string= proj-subproj "Basecaller")
 	(when (or (string= proj-arch "k1om")(string= proj-arch "avx512")) (setq valid nil))
-        (when (and (string= proj-arch "gcc")(not proj-debug-state )) (setq valid nil))
+        (unless (or valid lasterror) (setq lasterror "Only basecaller can use this arch"))
+        (when (and (string= proj-arch "gcc")(not proj-debug )) (setq valid nil))
+        (unless (or valid lasterror)(setq lasterror "Only basecaller can use Release and gcc"))
     )
     valid
 )
@@ -83,26 +89,26 @@
     )
 )
 
-(defun proj-remote-build()
-  (concat "ssh " proj-remote " 'cd "
-	  (proj-build-dir proj-arch proj-debug-state) "\; "
+(defun proj-host-build()
+  (concat "ssh " proj-host " 'cd "
+	  (proj-build-dir proj-arch proj-debug) "\; "
 	  (pb-base-dir) "sync_and_build.sh " proj-compile-args"'")
 )
-(defun proj-remote-clean()
-  (concat "ssh " proj-remote " 'cd "
-	  (proj-build-dir proj-arch proj-debug-state) "\; make clean'")
+(defun proj-host-clean()
+  (concat "ssh " proj-host " 'cd "
+	  (proj-build-dir proj-arch proj-debug) "\; make clean'")
 )
-(defun proj-remote-cleanbuild()
-  (concat "ssh " proj-remote " 'cd "
-	  (proj-build-dir proj-arch proj-debug-state)
+(defun proj-host-cleanbuild()
+  (concat "ssh " proj-host " 'cd "
+	  (proj-build-dir proj-arch proj-debug)
 	  "\; make clean\; " (pb-base-dir)
 	  "sync_and_build.sh " proj-compile-args"'")
 )
-(defun proj-remote-run()
+(defun proj-host-run()
   (if (not proj-run-args)
       (print "No run command specified")
-      (concat "ssh " proj-remote " 'cd "
-	  (proj-build-dir proj-arch proj-debug-state) "\; "
+      (concat "ssh " proj-host " 'cd "
+	  (proj-build-dir proj-arch proj-debug) "\; "
 	  proj-run-args "'")
   )
 )
@@ -127,30 +133,31 @@
     ((proj-valid) .
 	(("RefreshIndex" "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .; rc -J ." (proj-build-dir "gcc" t)))
     )
-    ((and (proj-valid)(not proj-remote)) .
-	(("Build" proj-build (proj-build-dir proj-arch proj-debug-state))
-	 ("Clean" proj-clean (proj-build-dir proj-arch proj-debug-state))
-	 ("CleanBuild" proj-cleanbuild (proj-build-dir proj-arch proj-debug-state))
-         ("Run" proj-run (proj-build-dir proj-arch proj-debug-state)))
+    ((and (proj-valid)(not proj-host)) .
+	(("Build" proj-build (proj-build-dir proj-arch proj-debug))
+	 ("Clean" proj-clean (proj-build-dir proj-arch proj-debug))
+	 ("CleanBuild" proj-cleanbuild (proj-build-dir proj-arch proj-debug))
+         ("Run" proj-run (proj-build-dir proj-arch proj-debug)))
     )
-    ((and (proj-valid) proj-remote) .
-	(("Build" . proj-remote-build)
-	 ("Clean" . proj-remote-clean)
-	 ("CleanBuild" . proj-remote-cleanbuild)
-         ("Run" . proj-remote-run))
+    ((and (proj-valid) proj-host) .
+	(("Build" . proj-host-build)
+	 ("Clean" . proj-host-clean)
+	 ("CleanBuild" . proj-host-cleanbuild)
+         ("Run" . proj-host-run))
     )
 ))
 
-(defun proj-curr-build-dir ()(interactive) (print (proj-build-dir proj-arch proj-debug-state)))
+(defun proj-curr-build-dir ()(interactive) (print (proj-build-dir proj-arch proj-debug)))
 (defun proj-info ()(interactive) (
-	print (concat "Host: " (if proj-remote proj-remote "localhost")
+	print (concat "Host: " (if proj-host proj-host "localhost")
 		      "\n Project: " proj-subproj
 		      "\n Type: " proj-arch
-		      " " (if proj-debug-state "Debug" "Release")
-		      "\n BuildDir: " (proj-build-dir proj-arch proj-debug-state)
+		      " " (if proj-debug "Debug" "Release")
+		      "\n BuildDir: " (proj-build-dir proj-arch proj-debug)
 		      (when proj-compile-args (concat "\n Compile Args: " proj-compile-args))
 		      (when proj-run-args (concat "\n Run Command: " proj-run-args))
                       (if (proj-valid) "\nValid Setup" "\nINVALID Setup")
+                      (when lasterror (concat "\nError: " lasterror))
 )))
 
 (setq proj-bad-config nil)
@@ -189,6 +196,7 @@
     (widget-insert "Project:\n")
     (widget-create 'radio-button-choice
         :value "PPA"
+        :follow-link "\C-m"
         :notify (lambda (widget &rest ignore)
 		    (cond ((string= (widget-value widget) "PPA") (proj-ppa))
 			  ((string= (widget-value widget) "Basecaller") (proj-basecaller))
@@ -208,7 +216,7 @@
     (widget-insert "\n")
     (widget-insert "Compiler:\n")
     (widget-create 'radio-button-choice
-        :value "icc"
+        :value proj-arch
         :notify (lambda (widget &rest ignore)
 		    (cond ((string= (widget-value widget) "gcc") (proj-arch-gcc))
 			  ((string= (widget-value widget) "icc") (proj-arch-icc))
@@ -224,7 +232,7 @@
     (widget-insert "\n")
     (widget-insert "Type:\n")
     (widget-create 'radio-button-choice
-        :value "Release"
+        :value (if proj-debug "Debug" "Release")
         :notify (lambda (widget &rest ignore)
 		    (cond ((string= (widget-value widget) "Release") (proj-release))
 			  ((string= (widget-value widget) "Debug") (proj-debug))
@@ -236,7 +244,7 @@
     (widget-insert "\n")
     (widget-insert "Host:\n")
     (widget-create 'radio-button-choice
-        :value "localhost"
+        :value proj-host
         :notify (lambda (widget &rest ignore)
 		    (cond ((string= (widget-value widget) "localhost") (proj-localhost))
 			  ((string= (widget-value widget) "dev00") (proj-dev00))
@@ -248,18 +256,12 @@
         '(item "dev00")
         '(item "dev01"))
     (widget-insert "\n")
-    ;;(widget-create 'push-button
-    ;;    :notify (lambda (widget &rest ignore)
-    ;;              (proj-valid))
-    ;;              
-    ;;    "Apply Form")
- 
-    ;;(widget-create 'push-button
-    ;;    :notify (lambda (&rest ignore)
-    ;;        (proj-configure))
-    ;;    "Reset Form")
-    ;;(widget-insert "\n")
-    ;;(use-local-map widget-keymap)
+    (widget-create 'push-button
+        :notify (lambda (widget &rest ignore)
+                  (kill-buffer-and-window))
+                  
+        "Finished")
     (widget-setup)
+    (goto-char 0)
 )
 
