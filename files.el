@@ -5,7 +5,9 @@
 (require 'find-file-in-repository)
 (global-set-key (kbd "C-S-o") 'find-file-in-repository)
 
+(require 'treemacs)
 (global-set-key (kbd "C-S-t") 'treemacs)
+(semantic-mode)
 
 (require 'recentf)
 (recentf-mode t)
