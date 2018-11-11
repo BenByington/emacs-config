@@ -1,6 +1,6 @@
 (require 'multi-compile)
 
-(defun pb-base-dir ()(locate-dominating-file default-directory ".git"))
+(defun git-base-dir ()(locate-dominating-file default-directory ".git"))
 
 (setq proj-debug t)
 (setq proj-arch "gcc")
@@ -18,7 +18,7 @@
 (defun proj-release()(interactive) (setq proj-debug nil))
 
 (defun proj-generic-build-dirs (proj arch debug)
-    (setq baseDir (pb-base-dir))
+    (setq baseDir (git-base-dir))
     (setq relDir (concat proj "/"))
     (cond ((and (string= arch "gcc") debug)       (setq archDir "build/x86_64/Debug_gcc"))
           ((and (string= arch "icc") debug)       (setq archDir "build/x86_64/Debug"))
@@ -34,7 +34,7 @@
 (defun proj-cc-build-dir (arch debug) (proj-generic-build-dirs "Sequel/common" arch debug))
 (defun proj-cplusplus-build-dir (arch debug) (proj-generic-build-dirs "common/pacbio-cplusplus-api" arch debug))
 (defun proj-bc-build-dir (arch debug)
-    (setq baseDir (pb-base-dir))
+    (setq baseDir (git-base-dir))
     (setq relDir "Sequel/basecaller/")
     (cond ((string= arch "gcc")    (setq archDir "build/x86_64_gcc/"))
           ((string= arch "icc")    (setq archDir "build/x86_64/"))
@@ -47,6 +47,14 @@
           (setq return (concat baseDir relDir archDir buildDir)))
 )
 
+(defun proj-shapeshift-build-dir (arch debug)
+    (setq baseDir (git-base-dir))
+    (if debug (setq buildDir "build/Debug") (setq buildDir "build/Release"))
+    (message (concat baseDir buildDir))
+    (when (file-directory-p (concat baseDir buildDir)) 
+          (setq return (concat baseDir buildDir)))
+)
+
 (defun proj-ppa()        (interactive) (setq proj-subproj "PPA")(fset 'proj-build-dir 'proj-ppa-build-dir))
 (defun proj-cpluspus()   (interactive) (setq proj-subproj "CPlusPlusAPI")(fset 'proj-build-dir 'proj-cplusplus-build-dir))
 (defun proj-seq-common() (interactive) (setq proj-subproj "Common")(fset 'proj-build-dir 'proj-cc-build-dir))
@@ -54,22 +62,34 @@
 (defun proj-basewriter() (interactive) (setq proj-subproj "Basewriter")(fset 'proj-build-dir 'proj-bw-build-dir))
 (defun proj-acquisition()(interactive) (setq proj-subproj "Acquisition")(fset 'proj-build-dir 'proj-acq-build-dir))
 
+(defun proj-shapeshift() (interactive) (setq proj-subproj "ShapeShift")(fset 'proj-build-dir 'proj-shapeshift-build-dir))
+
 (setq lasterror nil)
 (defun proj-valid()(interactive)
     (setq valid t)
     (setq lasterror nil)
     (unless (proj-build-dir proj-arch proj-debug) (setq valid nil))
-    ;; Only gcc allowed locally
-    ( unless (or valid lasterror)(setq lasterror "Something wrong with project build directory"))
-    ( when (and (not (string= proj-arch "gcc"))(string= "localhost" proj-host))
-	(setq valid nil)
-    )
-    ( unless (or valid lasterror) (setq lasterror "Must use gcc on localhost"))
-    ( unless (string= proj-subproj "Basecaller")
-	(when (or (string= proj-arch "k1om")(string= proj-arch "avx512")) (setq valid nil))
-        (unless (or valid lasterror) (setq lasterror "Only basecaller can use this arch"))
-        (when (and (string= proj-arch "gcc")(not proj-debug )) (setq valid nil))
-        (unless (or valid lasterror)(setq lasterror "Only basecaller can use Release and gcc"))
+    (unless (or valid lasterror)(setq lasterror "Something wrong with project build directory"))
+    (if (string= proj-subproj "ShapeShift")
+        (progn   ;; Personal targets
+            (unless (string= proj-host "localhost") (setq valid nil))
+            (unless (or valid lasterror)(setq lasterror "ShapeShifter only compiles locally"))
+            (unless (string= proj-arch "gcc") (setq valid nil))
+            (unless (or valid lasterror)(setq lasterror "ShapeShifter only uses gcc"))
+        )
+        (progn   ;; Normal primary targets
+            ;; Only gcc allowed locally
+            ( when (and (not (string= proj-arch "gcc"))(string= "localhost" proj-host))
+                (setq valid nil)
+            )
+            ( unless (or valid lasterror) (setq lasterror "Must use gcc on localhost"))
+            ( unless (string= proj-subproj "Basecaller")
+                (when (or (string= proj-arch "k1om")(string= proj-arch "avx512")) (setq valid nil))
+                (unless (or valid lasterror) (setq lasterror "Only basecaller can use this arch"))
+                (when (and (string= proj-arch "gcc")(not proj-debug )) (setq valid nil))
+                (unless (or valid lasterror)(setq lasterror "Only basecaller can use Release and gcc"))
+            )
+        )
     )
     valid
 )
@@ -92,7 +112,7 @@
 (defun proj-host-build()
   (concat "ssh " proj-host " 'cd "
 	  (proj-build-dir proj-arch proj-debug) "\; "
-	  (pb-base-dir) "sync_and_build.sh " proj-compile-args"'")
+	  (git-base-dir) "sync_and_build.sh " proj-compile-args"'")
 )
 (defun proj-host-clean()
   (concat "ssh " proj-host " 'cd "
@@ -101,7 +121,7 @@
 (defun proj-host-cleanbuild()
   (concat "ssh " proj-host " 'cd "
 	  (proj-build-dir proj-arch proj-debug)
-	  "\; make clean\; " (pb-base-dir)
+	  "\; make clean\; " (git-base-dir)
 	  "sync_and_build.sh " proj-compile-args"'")
 )
 (defun proj-host-run()
@@ -133,13 +153,13 @@
     ((proj-valid) .
 	(("RefreshIndex" "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .; rc -J ." (proj-build-dir "gcc" t)))
     )
-    ((and (proj-valid)(not proj-host)) .
+    ((and (proj-valid)(string= proj-host "localhost")) .
 	(("Build" proj-build (proj-build-dir proj-arch proj-debug))
 	 ("Clean" proj-clean (proj-build-dir proj-arch proj-debug))
 	 ("CleanBuild" proj-cleanbuild (proj-build-dir proj-arch proj-debug))
          ("Run" proj-run (proj-build-dir proj-arch proj-debug)))
     )
-    ((and (proj-valid) proj-host) .
+    ((and (proj-valid) (not (string= proj-host "localhost"))) .
 	(("Build" . proj-host-build)
 	 ("Clean" . proj-host-clean)
 	 ("CleanBuild" . proj-host-cleanbuild)
