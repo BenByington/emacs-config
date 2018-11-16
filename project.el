@@ -8,8 +8,8 @@
 (setq proj-subproj nil)
 
 (defun proj-localhost()(interactive) (setq proj-host "localhost"))
-(defun proj-dev00()(interactive) (setq proj-host "dev00"))
-(defun proj-dev01()(interactive) (setq proj-host "dev01"))
+(defun proj-dev00()(interactive) (setq proj-host "pa-dev00"))
+(defun proj-dev01()(interactive) (setq proj-host "pa-dev01"))
 (defun proj-arch-gcc ()(interactive) (setq proj-arch "gcc"))
 (defun proj-arch-icc ()(interactive) (setq proj-arch "icc"))
 (defun proj-arch-avx ()(interactive) (setq proj-arch "avx512"))
@@ -215,7 +215,7 @@
     (widget-insert "Setup primary build configurations.\n\n")
     (widget-insert "Project:\n")
     (widget-create 'radio-button-choice
-        :value "PPA"
+        :value proj-subproj
         :follow-link "\C-m"
         :notify (lambda (widget &rest ignore)
 		    (cond ((string= (widget-value widget) "PPA") (proj-ppa))
@@ -267,14 +267,14 @@
         :value proj-host
         :notify (lambda (widget &rest ignore)
 		    (cond ((string= (widget-value widget) "localhost") (proj-localhost))
-			  ((string= (widget-value widget) "dev00") (proj-dev00))
-			  ((string= (widget-value widget) "dev01") (proj-dev01))
+			  ((string= (widget-value widget) "pa-dev00") (proj-dev00))
+			  ((string= (widget-value widget) "pa-dev01") (proj-dev01))
 			  ( t (message "No Match")))
 		    (proj-info)
 		)
         '(item "localhost" )
-        '(item "dev00")
-        '(item "dev01"))
+        '(item "pa-dev00")
+        '(item "pa-dev01"))
     (widget-insert "\n")
     (widget-create 'push-button
         :notify (lambda (widget &rest ignore)
