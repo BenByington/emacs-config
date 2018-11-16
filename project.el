@@ -151,7 +151,7 @@
 
 (setq multi-compile-alist '(
     ((proj-valid) .
-	(("RefreshIndex" "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .; rc -J ." (proj-build-dir "gcc" t)))
+	(("RefreshIndex" "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .; rc -J . --project-root=$(pwd); rc -w $(pwd)" (proj-build-dir "gcc" t)))
     )
     ((and (proj-valid)(string= proj-host "localhost")) .
 	(("Build" proj-build (proj-build-dir proj-arch proj-debug))
