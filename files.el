@@ -7,7 +7,7 @@
 
 (require 'treemacs)
 (global-set-key (kbd "C-S-t") 'treemacs)
-(semantic-mode)
+;;(semantic-mode)
 
 (require 'recentf)
 (recentf-mode t)
