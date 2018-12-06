@@ -14,9 +14,9 @@
 (add-hook 'c++-mode-hook (lambda () (setq flycheck-clang-language-standard "-c++14")))
 
 (define-key c++-mode-map [C-down-mouse-1] 'rtags-find-symbol-at-point)
-(define-key c++-mode-map [C-mouse-1] 'rtags-find-symbol-at-point)
+;;(define-key c++-mode-map [C-mouse-1] 'rtags-find-symbol-at-point)
 (define-key c++-mode-map [C-down-mouse-3] 'rtags-find-references-at-point)
-(define-key c++-mode-map [C-mouse-3] 'rtags-find-references-at-point)
+;;(define-key c++-mode-map [C-mouse-3] 'rtags-find-references-at-point)
 (define-key c++-mode-map (kbd "<M-left>") nil)
 (define-key c++-mode-map (kbd "<M-right>") nil)
 (define-key c++-mode-map (kbd "<M-left>") 'rtags-location-stack-back)
