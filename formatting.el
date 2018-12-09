@@ -10,3 +10,4 @@
     (c-set-offset 'substatement-open 0)
 )
 (add-hook 'c++-mode-hook 'cpp-indent-setup)
+(setq-default show-trailing-whitespace t)
