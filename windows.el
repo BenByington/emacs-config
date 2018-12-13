@@ -9,6 +9,7 @@
 (require 'evil-matchit)
 (global-evil-matchit-mode)
 (setq evil-ex-search-case 'sensitive)
+(setq evil-want-fine-undo t)
 
 (tabbar-mode t)
 (winner-mode t)
