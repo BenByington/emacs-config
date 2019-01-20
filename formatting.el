@@ -11,3 +11,6 @@
 )
 (add-hook 'c++-mode-hook 'cpp-indent-setup)
 (setq-default show-trailing-whitespace t)
+
+(require 'ws-butler)
+(add-hook 'c++-mode-hook 'ws-butler-mode)
