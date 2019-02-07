@@ -29,7 +29,7 @@
           (setq return (concat baseDir relDir archDir)))
 )
 (defun proj-web-build-dir (arch debug) (proj-generic-build-dirs "Sequel/webservices" arch debug))
-(defun proj-ppa-build-dir (arch debug) (proj-generic-build-dirs "Sequel/ppa" arch debug))
+(defun proj-ppa-build-dir (arch debug) (proj-generic-build-dirs "Sequel/postprimary" arch debug))
 (defun proj-acq-build-dir (arch debug) (proj-generic-build-dirs "Sequel/acquisition" arch debug))
 (defun proj-bw-build-dir (arch debug) (proj-generic-build-dirs "Sequel/basewriter" arch debug))
 (defun proj-cc-build-dir (arch debug) (proj-generic-build-dirs "Sequel/common" arch debug))
