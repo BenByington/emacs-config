@@ -56,21 +56,31 @@
           (setq return (concat baseDir buildDir)))
 )
 
-(defun proj-update-rtags-proj() 
-    (setq rtags-process-flags (concat "-d ~/.cache/rtags/" proj-subproj))
-    (rtags-restart-process)
-    (rtags-start-process-unless-running)
+(defun lsp-restart-workspace-quiet ()
+  (--when-let (pcase (lsp-workspaces)
+                (`(,workspace) workspace))
+    (lsp--warn "Restarting %s" (lsp--workspace-print it))
+    (setf (lsp--workspace-shutdown-action it) 'restart)
+    (with-lsp-workspace it (lsp--shutdown-workspace))))
+
+
+(defun proj-update-parse-proj() 
+    (setq cacheDir (expand-file-name (concat "~/.cache/ccls/" proj-subproj)))
+    (setq commandDir (file-relative-name (proj-build-dir "gcc" t) (git-base-dir)))
+    (setq ccls-initialization-options `(:cacheDirectory , cacheDir 
+                                        :compilationDatabaseDirectory , commandDir))
+    (lsp-restart-workspace-quiet)
 )
 
-(defun proj-web()         (interactive)(setq proj-subproj "Webservices") (proj-update-rtags-proj)(fset 'proj-build-dir 'proj-web-build-dir))
-(defun proj-ppa()         (interactive)(setq proj-subproj "PPA" )        (proj-update-rtags-proj)(fset 'proj-build-dir 'proj-ppa-build-dir))
-(defun proj-cpluspus()    (interactive)(setq proj-subproj "CPlusPlusAPI")(proj-update-rtags-proj)(fset 'proj-build-dir 'proj-cplusplus-build-dir))
-(defun proj-seq-common()  (interactive)(setq proj-subproj "Common")      (proj-update-rtags-proj)(fset 'proj-build-dir 'proj-cc-build-dir))
-(defun proj-basecaller()  (interactive)(setq proj-subproj "Basecaller")  (proj-update-rtags-proj)(fset 'proj-build-dir 'proj-bc-build-dir))
-(defun proj-basewriter()  (interactive)(setq proj-subproj "Basewriter")  (proj-update-rtags-proj)(fset 'proj-build-dir 'proj-bw-build-dir))
-(defun proj-acquisition() (interactive)(setq proj-subproj "Acquisition") (proj-update-rtags-proj)(fset 'proj-build-dir 'proj-acq-build-dir))
-
-(defun proj-shapeshift() (interactive) (setq proj-subproj "ShapeShift")  (proj-update-rtags-proj)(fset 'proj-build-dir 'proj-shapeshift-build-dir))
+(defun proj-web()         (interactive)(setq proj-subproj "Webservices") (fset 'proj-build-dir 'proj-web-build-dir)      (proj-update-parse-proj))
+(defun proj-ppa()         (interactive)(setq proj-subproj "PPA" )        (fset 'proj-build-dir 'proj-ppa-build-dir)      (proj-update-parse-proj))
+(defun proj-cpluspus()    (interactive)(setq proj-subproj "CPlusPlusAPI")(fset 'proj-build-dir 'proj-cplusplus-build-dir)(proj-update-parse-proj))
+(defun proj-seq-common()  (interactive)(setq proj-subproj "Common")      (fset 'proj-build-dir 'proj-cc-build-dir)       (proj-update-parse-proj))
+(defun proj-basecaller()  (interactive)(setq proj-subproj "Basecaller")  (fset 'proj-build-dir 'proj-bc-build-dir)       (proj-update-parse-proj))
+(defun proj-basewriter()  (interactive)(setq proj-subproj "Basewriter")  (fset 'proj-build-dir 'proj-bw-build-dir)       (proj-update-parse-proj))
+(defun proj-acquisition() (interactive)(setq proj-subproj "Acquisition") (fset 'proj-build-dir 'proj-acq-build-dir)      (proj-update-parse-proj))
+                                                                                                                                                 
+(defun proj-shapeshift() (interactive) (setq proj-subproj "ShapeShift")  (fset 'proj-build-dir 'proj-shapeshift-build-dir)(proj-update-parse-proj))
 
 (setq lasterror nil)
 (defun proj-valid()(interactive)
@@ -157,9 +167,10 @@
   )
 )
 
+(setq refresh nil)
 (setq multi-compile-alist '(
     ((proj-valid) .
-	(("RefreshIndex" "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .; rc -J . --project-root=$(pwd); rc -w $(pwd)" (proj-build-dir "gcc" t)))
+	(("RefreshIndex" "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ." (progn (setq refresh t) (proj-build-dir "gcc" t))))
     )
     ((and (proj-valid)(string= proj-host "localhost")) .
 	(("Build" proj-build (proj-build-dir proj-arch proj-debug))
@@ -191,8 +202,8 @@
 (setq proj-bad-config nil)
 (defun proj-compile-private()
        (unless (proj-valid) (setq proj-bad-config "Invalid project configuration.  Check directory and 'proj-info'")(throw 'proj-bad-config t))
-       (rtags-start-process-unless-running)
        (multi-compile-run)
+       (when refresh (lsp-restart-workspace-quiet) (setq refresh nil))
 )
 
 (defun proj-compile()(interactive)

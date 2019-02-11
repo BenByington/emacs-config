@@ -4,9 +4,11 @@
 
 (add-to-list 'load-path (expand-file-name "~/emacs-config/dependencies/multi-compile"))
 
+(load-file "~/emacs-config/util.el")
 (load-file "~/emacs-config/windows.el")
 (load-file "~/emacs-config/compile.el")
-(load-file "~/emacs-config/rtags.el")
+(load-file "~/emacs-config/ccls.el")
+;;(load-file "~/emacs-config/rtags.el")
 (load-file "~/emacs-config/files.el")
 (load-file "~/emacs-config/project.el")
 (load-file "~/emacs-config/formatting.el")
