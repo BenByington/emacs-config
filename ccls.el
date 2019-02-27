@@ -13,6 +13,9 @@
 
 (evil-set-initial-state 'ccls-tree-mode 'emacs)
 
+(require 'yasnippet)
+(add-hook 'c++-mode-hook 'yas-minor-mode)
+
 (defun dummy-func() (setq dummy t))
 (global-unset-key [C-down-mouse-3])
 (global-unset-key [C-down-mouse-1])
