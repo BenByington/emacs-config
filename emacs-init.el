@@ -4,6 +4,9 @@
 
 (add-to-list 'load-path (expand-file-name "~/emacs-config/dependencies/multi-compile"))
 
+(add-to-list 'auto-mode-alist '("\\.cu\\'" . c++-mode))
+(add-to-list 'auto-mode-alist '("\\.cuh\\'" . c++-mode))
+
 (load-file "~/emacs-config/util.el")
 (load-file "~/emacs-config/windows.el")
 (load-file "~/emacs-config/compile.el")
