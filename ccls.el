@@ -3,6 +3,8 @@
 (setq ccls-executable "/home/UNIXHOME/bbyington/ccls-install/bin/ccls")
 (setq ccls-args (list "-v=2" "-log-file=stderr"))
 
+(setq lsp-enable-on-type-formatting nil)
+
 (use-package lsp-mode :commands lsp)
 (use-package lsp-ui :commands lsp-ui-mode)
 (use-package company-lsp :commands company-lsp)
