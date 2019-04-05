@@ -3,6 +3,9 @@
 (add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
 (load-theme 'dracula t)
 
+(require 'popwin)
+(popwin-mode 1)
+
 (require 'evil)
 (evil-mode 1)
 (evil-select-search-module 'evil-search-module 'evil-search)
