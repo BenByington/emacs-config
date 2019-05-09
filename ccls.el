@@ -13,6 +13,24 @@
   :hook ((c-mode c++-mode objc-mode) .
          (lambda () (require 'ccls) (lsp))))
 
+(setq arg-replacements '("-G " . ""))
+(setq arg-replacements (append '(("-x cu" . "-x cuda")) arg-replacements))
+
+(setq arg-replacements (list (cons "-G " "")
+                             (cons "-x cu" "-x cuda")
+                       )
+)
+
+;; Need to make cmake generate the compile commands json file.  Also nvcc commands
+;; need some munging, to sidestep incompatabilities between cuda and nvcc flags
+(defun generate-compile-commands-str()
+  (setq ret "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 .; ")
+  (dolist (val arg-replacements)
+    (setq ret (concat ret "sed -i '/command.*nvcc/s/" (car val) "/" (cdr val) "/g' compile_commands.json; "))
+  )
+  (symbol-value 'ret)
+)
+
 (evil-set-initial-state 'ccls-tree-mode 'emacs)
 
 (require 'yasnippet)

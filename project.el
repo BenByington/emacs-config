@@ -180,7 +180,10 @@
 (setq refresh nil)
 (setq multi-compile-alist '(
     ((proj-valid) .
-	(("RefreshIndex" "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ." (progn (setq refresh t) (proj-build-dir "gcc" t))))
+                          ;; The sed command is necessary because while clang can parse cuda code, some of the options are 
+                          ;; different compared to nvcc.  `-x cu` needs to be `-x cuda`, and `-G` seems to cause
+                          ;; parsing to fail
+	(("RefreshIndex" generate-compile-commands-str (progn (setq refresh t) (proj-build-dir "gcc" t))))
     )
     ((and (proj-valid)(string= proj-host "localhost")) .
 	(("Build" proj-build (proj-build-dir proj-arch proj-debug))
