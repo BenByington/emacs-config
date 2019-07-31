@@ -1,7 +1,7 @@
 
 (require 'ccls)
 (setq ccls-executable "/home/UNIXHOME/bbyington/ccls-install/bin/ccls")
-(setq ccls-args (list "-v=2" "-log-file=stderr"))
+(setq ccls-args (list "-v=1" "-log-file=stderr"))
 
 (setq lsp-enable-on-type-formatting nil)
 
@@ -39,8 +39,16 @@
 (defun dummy-func() (setq dummy t))
 (global-unset-key [C-down-mouse-3])
 (global-unset-key [C-down-mouse-1])
-(define-key c++-mode-map [C-mouse-1] 'lsp-ui-peek-find-definitions)
-(define-key c++-mode-map [C-mouse-3] 'lsp-ui-peek-find-references)
+(global-unset-key [C-mouse-3])
+(global-unset-key [C-mouse-1])
+;;(define-key c++-mode-map [C-mouse-1] 'lsp-ui-peek-find-definitions)
+;;(define-key c++-mode-map [C-mouse-3] 'lsp-ui-peek-find-references)
+;;(define-key c++-mode-map [C-down-mouse-1] 'lsp-ui-peek-find-definitions)
+;;(define-key c++-mode-map [C-down-mouse-3] 'lsp-ui-peek-find-references)
+(define-key lsp-mode-map [C-mouse-1] 'lsp-ui-peek-find-definitions)
+(define-key lsp-mode-map [C-mouse-3] 'lsp-ui-peek-find-references)
+(define-key lsp-mode-map [C-down-mouse-1] nil)
+(define-key lsp-mode-map [C-down-mouse-3] nil)
 (define-key c++-mode-map (kbd "<M-left>") nil)
 (define-key c++-mode-map (kbd "<M-right>") nil)
 (define-key c++-mode-map (kbd "<M-left>") 'lsp-ui-peek-jump-backward)
