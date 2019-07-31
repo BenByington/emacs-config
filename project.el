@@ -78,7 +78,7 @@
 (defun proj-update-parse-proj() 
     (setq cacheDir (expand-file-name (concat "~/.cache/ccls/" proj-subproj)))
     (setq commandDir (file-relative-name (proj-build-dir "gcc" t) (git-base-dir)))
-    (setq ccls-initialization-options `(:cacheDirectory , cacheDir 
+    (setq ccls-initialization-options `(:cache (:directory , cacheDir) 
                                         :compilationDatabaseDirectory , commandDir))
     (lsp-restart-workspace-quiet)
 )
