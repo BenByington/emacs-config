@@ -7,3 +7,10 @@
 (setq ediff-merge-split-window-function 'split-window-horizontally)
 
 (global-diff-hl-mode t)
+
+(require 'ansi-color)
+(setq comint-terminfo-terminal "xterm")
+(defun colorize-compilation-buffer ()
+  (ansi-color-apply-on-region compilation-filter-start (point-max)))
+(add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
+
