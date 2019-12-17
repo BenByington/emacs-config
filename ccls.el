@@ -4,6 +4,7 @@
 (setq ccls-args (list "-v=1" "-log-file=stderr"))
 
 (setq lsp-enable-on-type-formatting nil)
+(setq lsp-file-watch-threshold nil)
 
 (use-package lsp-mode :commands lsp)
 (use-package lsp-ui :commands lsp-ui-mode)
@@ -30,6 +31,8 @@
   )
   (symbol-value 'ret)
 )
+
+(setq lsp-log-io t)
 
 (evil-set-initial-state 'ccls-tree-mode 'emacs)
 
