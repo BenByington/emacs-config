@@ -1,11 +1,12 @@
 (require 'multi-compile)
 
-(defun git-base-dir ()(locate-dominating-file default-directory ".git"))
+;;(defun git-base-dir ()(locate-dominating-file default-directory ".git"))
 
 (setq proj-debug t)
 (setq proj-arch "gcc")
 (setq proj-host "localhost")
 (setq proj-subproj nil)
+(setq proj-root nil)
 
 (defun proj-localhost()(interactive) (setq proj-host "localhost"))
 (defun proj-dev00()(interactive) (setq proj-host "pa-dev00"))
@@ -19,7 +20,7 @@
 (defun proj-release()(interactive) (setq proj-debug nil))
 
 (defun proj-generic-build-dirs (proj arch debug)
-    (setq baseDir (git-base-dir))
+    (setq baseDir proj-root)
     (setq relDir (concat proj "/"))
     (cond ((and (string= arch "gcc") debug)       (setq archDir "build/x86_64/Debug_gcc"))
           ((and (string= arch "icc") debug)       (setq archDir "build/x86_64/Debug"))
@@ -36,7 +37,7 @@
 (defun proj-cc-build-dir (arch debug) (proj-generic-build-dirs "Sequel/common" arch debug))
 (defun proj-cplusplus-build-dir (arch debug) (proj-generic-build-dirs "common/pacbio-cplusplus-api" arch debug))
 (defun proj-bc-build-dir (arch debug)
-    (setq baseDir (git-base-dir))
+    (setq baseDir proj-root)
     (setq relDir "Sequel/basecaller/")
     (cond ((string= arch "gcc")    (setq archDir "build/x86_64_gcc/"))
           ((string= arch "icc")    (setq archDir "build/x86_64/"))
@@ -49,8 +50,8 @@
           (setq return (concat baseDir relDir archDir buildDir)))
 )
 (defun proj-mongo-build-dir (arch debug)
-    (setq baseDir (git-base-dir))
-    (setq relDir "mongo/")
+    (setq baseDir proj-root)
+    (setq relDir "")
     (cond ((and (string= arch "gcc") debug)       (setq archDir "build/x86_64/Debug_gcc"))
           ((and (string= arch "gcc") (not debug)) (setq archDir "build/x86_64/Release_gcc"))
           ((and (string= arch "icc") debug)       (setq archDir "build/x86_64/Debug"))
@@ -62,7 +63,7 @@
 )
 
 (defun proj-shapeshift-build-dir (arch debug)
-    (setq baseDir (git-base-dir))
+    (setq baseDir proj-root)
     (if debug (setq buildDir "build/Debug") (setq buildDir "build/Release"))
     (message (concat baseDir buildDir))
     (when (file-directory-p (concat baseDir buildDir)) 
@@ -79,22 +80,22 @@
 
 (defun proj-update-parse-proj() 
     (setq cacheDir (expand-file-name (concat "~/.cache/ccls/" proj-subproj)))
-    (setq commandDir (file-relative-name (proj-build-dir "gcc" t) (git-base-dir)))
+    (setq commandDir (file-relative-name (proj-build-dir "gcc" t) proj-root))
     (setq ccls-initialization-options `(:cache (:directory , cacheDir) 
                                         :compilationDatabaseDirectory , commandDir))
     (lsp-restart-workspace-quiet)
 )
 
-(defun proj-web()         (interactive)(setq proj-subproj "Webservices") (fset 'proj-build-dir 'proj-web-build-dir)      (proj-update-parse-proj))
-(defun proj-mongo()       (interactive)(setq proj-subproj "Mongo")       (fset 'proj-build-dir 'proj-mongo-build-dir)    (proj-update-parse-proj))
-(defun proj-ppa()         (interactive)(setq proj-subproj "PPA" )        (fset 'proj-build-dir 'proj-ppa-build-dir)      (proj-update-parse-proj))
-(defun proj-cpluspus()    (interactive)(setq proj-subproj "CPlusPlusAPI")(fset 'proj-build-dir 'proj-cplusplus-build-dir)(proj-update-parse-proj))
-(defun proj-seq-common()  (interactive)(setq proj-subproj "Common")      (fset 'proj-build-dir 'proj-cc-build-dir)       (proj-update-parse-proj))
-(defun proj-basecaller()  (interactive)(setq proj-subproj "Basecaller")  (fset 'proj-build-dir 'proj-bc-build-dir)       (proj-update-parse-proj))
-(defun proj-basewriter()  (interactive)(setq proj-subproj "Basewriter")  (fset 'proj-build-dir 'proj-bw-build-dir)       (proj-update-parse-proj))
-(defun proj-acquisition() (interactive)(setq proj-subproj "Acquisition") (fset 'proj-build-dir 'proj-acq-build-dir)      (proj-update-parse-proj))
+(defun proj-web()         (interactive)(setq proj-root "~/primary/") (setq proj-subproj "Webservices") (fset 'proj-build-dir 'proj-web-build-dir)      (proj-update-parse-proj))
+(defun proj-ppa()         (interactive)(setq proj-root "~/primary/") (setq proj-subproj "PPA" )        (fset 'proj-build-dir 'proj-ppa-build-dir)      (proj-update-parse-proj))
+(defun proj-seq-common()  (interactive)(setq proj-root "~/primary/") (setq proj-subproj "Common")      (fset 'proj-build-dir 'proj-cc-build-dir)       (proj-update-parse-proj))
+(defun proj-basecaller()  (interactive)(setq proj-root "~/primary/") (setq proj-subproj "Basecaller")  (fset 'proj-build-dir 'proj-bc-build-dir)       (proj-update-parse-proj))
+(defun proj-basewriter()  (interactive)(setq proj-root "~/primary/") (setq proj-subproj "Basewriter")  (fset 'proj-build-dir 'proj-bw-build-dir)       (proj-update-parse-proj))
+(defun proj-acquisition() (interactive)(setq proj-root "~/primary/") (setq proj-subproj "Acquisition") (fset 'proj-build-dir 'proj-acq-build-dir)      (proj-update-parse-proj))
+(defun proj-cpluspus()    (interactive)(setq proj-root "~/mongo-new/pa-common/") (setq proj-subproj "CPlusPlusAPI")(fset 'proj-build-dir 'proj-cplusplus-build-dir)(proj-update-parse-proj))
+(defun proj-mongo()       (interactive)(setq proj-root "~/mongo-new/pa-mongo/") (setq proj-subproj "Mongo")       (fset 'proj-build-dir 'proj-mongo-build-dir)    (proj-update-parse-proj))
                                                                                                                                                  
-(defun proj-shapeshift() (interactive) (setq proj-subproj "ShapeShift")  (fset 'proj-build-dir 'proj-shapeshift-build-dir)(proj-update-parse-proj))
+(defun proj-shapeshift() (interactive) (setq proj-root "~/Shapeshifter") (setq proj-subproj "ShapeShift")  (fset 'proj-build-dir 'proj-shapeshift-build-dir)(proj-update-parse-proj))
 
 (setq lasterror nil)
 (defun proj-valid()(interactive)
@@ -140,24 +141,24 @@
 )
 
 (defun proj-host-build()
-  (concat "ssh " proj-host " 'cd "
+  (concat "ssh -t " proj-host " 'cd "
 	  (proj-build-dir proj-arch proj-debug) "\; "
-	  (git-base-dir) "sync_and_build.sh " proj-compile-args"'")
+	  proj-root "sync_and_build.sh " proj-compile-args"'")
 )
 (defun proj-host-clean()
-  (concat "ssh " proj-host " 'cd "
+  (concat "ssh -t " proj-host " 'cd "
 	  (proj-build-dir proj-arch proj-debug) "\; make clean'")
 )
 (defun proj-host-cleanbuild()
-  (concat "ssh " proj-host " 'cd "
+  (concat "ssh -t " proj-host " 'cd "
 	  (proj-build-dir proj-arch proj-debug)
-	  "\; make clean\; " (git-base-dir)
+	  "\; make clean\; " proj-root
 	  "sync_and_build.sh " proj-compile-args"'")
 )
 (defun proj-host-run()
   (if (not proj-run-args)
       (print "No run command specified")
-      (concat "ssh " proj-host " 'cd "
+      (concat "ssh -t " proj-host " 'cd "
 	  (proj-build-dir proj-arch proj-debug) "\; "
 	  proj-run-args "'")
   )
@@ -228,10 +229,10 @@
 
 (global-set-key (kbd "C-S-p") 'proj-compile)
 
-(proj-ppa)
-(proj-dev01)
-(proj-arch-gcc)
-(proj-release)
+;;(proj-ppa)
+;;(proj-dev01)
+;;(proj-arch-gcc)
+;;(proj-release)
 
 (require 'widget)
      
