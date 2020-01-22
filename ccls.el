@@ -5,6 +5,11 @@
 
 (setq lsp-enable-on-type-formatting nil)
 (setq lsp-file-watch-threshold nil)
+(dolist (dir '(
+                 "[/\\\\]build$"
+                 "[/\\\\]depcache$"
+                 ))
+    (push dir lsp-file-watch-ignored))
 
 (use-package lsp-mode :commands lsp)
 (use-package lsp-ui :commands lsp-ui-mode)
