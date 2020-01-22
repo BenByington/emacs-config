@@ -8,6 +8,8 @@
 (defun cpp-indent-setup() 
     (c-set-offset 'innamespace [0])
     (c-set-offset 'substatement-open 0)
+    (c-set-offset 'brace-list-open 0)
+    (c-set-offset 'brace-list-intro 4)
 )
 (add-hook 'c++-mode-hook 'cpp-indent-setup)
 
