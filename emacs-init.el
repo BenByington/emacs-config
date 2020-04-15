@@ -23,3 +23,9 @@
   kept-new-versions 20   ; how many of the newest versions to keep
   kept-old-versions 5    ; and how many of the old
 )
+(auto-save-visited-mode)
+;; This would be nice to stop having save files in with the source, but
+;; the current version doesn't work (tries to add files to directories
+;; that don't exist)
+;;(setq auto-save-file-name-transforms `((".*" "~/.emacs.d/saves/" t)))
+
