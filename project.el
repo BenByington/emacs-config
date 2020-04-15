@@ -92,8 +92,8 @@
 (defun proj-basecaller()  (interactive)(setq proj-root "~/primary/") (setq proj-subproj "Basecaller")  (fset 'proj-build-dir 'proj-bc-build-dir)       (proj-update-parse-proj))
 (defun proj-basewriter()  (interactive)(setq proj-root "~/primary/") (setq proj-subproj "Basewriter")  (fset 'proj-build-dir 'proj-bw-build-dir)       (proj-update-parse-proj))
 (defun proj-acquisition() (interactive)(setq proj-root "~/primary/") (setq proj-subproj "Acquisition") (fset 'proj-build-dir 'proj-acq-build-dir)      (proj-update-parse-proj))
-(defun proj-cpluspus()    (interactive)(setq proj-root "~/mongo-new/pa-common/") (setq proj-subproj "CPlusPlusAPI")(fset 'proj-build-dir 'proj-cplusplus-build-dir)(proj-update-parse-proj))
-(defun proj-mongo()       (interactive)(setq proj-root "~/mongo-new/pa-mongo/") (setq proj-subproj "Mongo")       (fset 'proj-build-dir 'proj-mongo-build-dir)    (proj-update-parse-proj))
+(defun proj-cpluspus()    (interactive)(setq proj-root "~/pa-mongo/pa-common/") (setq proj-subproj "CPlusPlusAPI")(fset 'proj-build-dir 'proj-cplusplus-build-dir)(proj-update-parse-proj))
+(defun proj-mongo()       (interactive)(setq proj-root "~/pa-mongo/")           (setq proj-subproj "Mongo")       (fset 'proj-build-dir 'proj-mongo-build-dir)    (proj-update-parse-proj))
                                                                                                                                                  
 (defun proj-shapeshift() (interactive) (setq proj-root "~/Shapeshifter") (setq proj-subproj "ShapeShift")  (fset 'proj-build-dir 'proj-shapeshift-build-dir)(proj-update-parse-proj))
 
