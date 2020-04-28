@@ -24,6 +24,7 @@
 
 (setq arg-replacements (list (cons "-G " "")
                              (cons "-x cu" "-x cuda")
+                             (cons "-isystem=" "-I")
                        )
 )
 
