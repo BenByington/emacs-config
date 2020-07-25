@@ -1,4 +1,6 @@
 
+(setq gc-cons-threshold 50000000)
+
 (require 'ccls)
 (setq ccls-executable "/home/UNIXHOME/bbyington/ccls-install/bin/ccls")
 (setq ccls-args (list "-v=1" "-log-file=stderr"))
@@ -14,6 +16,7 @@
 (use-package lsp-mode :commands lsp)
 (use-package lsp-ui :commands lsp-ui-mode)
 (use-package company-lsp :commands company-lsp)
+(setq lsp-ui-doc-delay 1)
 
 (use-package ccls
   :hook ((c-mode c++-mode objc-mode) .

@@ -1,7 +1,8 @@
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 (add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
-(load-theme 'dracula t)
+;;(load-theme 'dracula t)
+(load-theme 'solarized-dark-high-contrast t)
 
 (require 'popwin)
 (popwin-mode 1)

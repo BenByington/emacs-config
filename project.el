@@ -7,6 +7,7 @@
 (setq proj-host "localhost")
 (setq proj-subproj nil)
 (setq proj-root nil)
+(setq proj-build-system "make")
 
 (defun proj-localhost()(interactive) (setq proj-host "localhost"))
 (defun proj-dev00()(interactive) (setq proj-host "pa-dev00"))
@@ -86,16 +87,16 @@
     (lsp-restart-workspace-quiet)
 )
 
-(defun proj-web()         (interactive)(setq proj-root "~/primary/") (setq proj-subproj "Webservices") (fset 'proj-build-dir 'proj-web-build-dir)      (proj-update-parse-proj))
-(defun proj-ppa()         (interactive)(setq proj-root "~/primary/") (setq proj-subproj "PPA" )        (fset 'proj-build-dir 'proj-ppa-build-dir)      (proj-update-parse-proj))
-(defun proj-seq-common()  (interactive)(setq proj-root "~/primary/") (setq proj-subproj "Common")      (fset 'proj-build-dir 'proj-cc-build-dir)       (proj-update-parse-proj))
-(defun proj-basecaller()  (interactive)(setq proj-root "~/primary/") (setq proj-subproj "Basecaller")  (fset 'proj-build-dir 'proj-bc-build-dir)       (proj-update-parse-proj))
-(defun proj-basewriter()  (interactive)(setq proj-root "~/primary/") (setq proj-subproj "Basewriter")  (fset 'proj-build-dir 'proj-bw-build-dir)       (proj-update-parse-proj))
-(defun proj-acquisition() (interactive)(setq proj-root "~/primary/") (setq proj-subproj "Acquisition") (fset 'proj-build-dir 'proj-acq-build-dir)      (proj-update-parse-proj))
-(defun proj-cpluspus()    (interactive)(setq proj-root "~/pa-mongo/pa-common/") (setq proj-subproj "CPlusPlusAPI")(fset 'proj-build-dir 'proj-cplusplus-build-dir)(proj-update-parse-proj))
-(defun proj-mongo()       (interactive)(setq proj-root "~/pa-mongo/")           (setq proj-subproj "Mongo")       (fset 'proj-build-dir 'proj-mongo-build-dir)    (proj-update-parse-proj))
+(defun proj-web()         (interactive)(setq proj-root "~/primary/") (setq proj-build-system "make") (setq proj-subproj "Webservices") (fset 'proj-build-dir 'proj-web-build-dir)      (proj-update-parse-proj))
+(defun proj-ppa()         (interactive)(setq proj-root "~/primary/") (setq proj-build-system "make") (setq proj-subproj "PPA" )        (fset 'proj-build-dir 'proj-ppa-build-dir)      (proj-update-parse-proj))
+(defun proj-seq-common()  (interactive)(setq proj-root "~/primary/") (setq proj-build-system "make") (setq proj-subproj "Common")      (fset 'proj-build-dir 'proj-cc-build-dir)       (proj-update-parse-proj))
+(defun proj-basecaller()  (interactive)(setq proj-root "~/primary/") (setq proj-build-system "make") (setq proj-subproj "Basecaller")  (fset 'proj-build-dir 'proj-bc-build-dir)       (proj-update-parse-proj))
+(defun proj-basewriter()  (interactive)(setq proj-root "~/primary/") (setq proj-build-system "make") (setq proj-subproj "Basewriter")  (fset 'proj-build-dir 'proj-bw-build-dir)       (proj-update-parse-proj))
+(defun proj-acquisition() (interactive)(setq proj-root "~/primary/") (setq proj-build-system "make") (setq proj-subproj "Acquisition") (fset 'proj-build-dir 'proj-acq-build-dir)      (proj-update-parse-proj))
+(defun proj-cpluspus()    (interactive)(setq proj-root "~/pa-mongo/pa-common/") (setq proj-build-system "make") (setq proj-subproj "CPlusPlusAPI")(fset 'proj-build-dir 'proj-cplusplus-build-dir)(proj-update-parse-proj))
+(defun proj-mongo()       (interactive)(setq proj-root "~/pa-mongo/")           (setq proj-build-system "ninja") (setq proj-subproj "Mongo")       (fset 'proj-build-dir 'proj-mongo-build-dir)    (proj-update-parse-proj))
                                                                                                                                                  
-(defun proj-shapeshift() (interactive) (setq proj-root "~/Shapeshifter") (setq proj-subproj "ShapeShift")  (fset 'proj-build-dir 'proj-shapeshift-build-dir)(proj-update-parse-proj))
+(defun proj-shapeshift() (interactive) (setq proj-root "~/Shapeshifter") (setq proj-build-system "make") (setq proj-subproj "ShapeShift")  (fset 'proj-build-dir 'proj-shapeshift-build-dir)(proj-update-parse-proj))
 
 (setq lasterror nil)
 (defun proj-valid()(interactive)
@@ -140,6 +141,20 @@
     )
 )
 
+(defun build-cmd()
+    (if (string= proj-build-system "make")
+        (setq return "make -j8")
+        (setq return "CLICOLOR_FORCE=1 ninja -j8")
+    )
+)
+
+(defun clean-cmd()
+    (if (string= proj-build-system "make")
+        (setq return "make clean")
+        (setq return "CLICOLOR_FORCE=1 ninja clean")
+    )
+)
+
 (defun proj-host-build()
   (concat "ssh -t " proj-host " 'cd "
 	  (proj-build-dir proj-arch proj-debug) "\; "
@@ -147,12 +162,12 @@
 )
 (defun proj-host-clean()
   (concat "ssh -t " proj-host " 'cd "
-	  (proj-build-dir proj-arch proj-debug) "\; make clean'")
+	  (proj-build-dir proj-arch proj-debug) "\; " (clean-cmd)"'")
 )
 (defun proj-host-cleanbuild()
   (concat "ssh -t " proj-host " 'cd "
 	  (proj-build-dir proj-arch proj-debug)
-	  "\; make clean\; " proj-root
+	  "\; " (clean-cmd) "\; " proj-root
 	  "sync_and_build.sh " proj-compile-args"'")
 )
 (defun proj-host-run()
@@ -165,13 +180,13 @@
 )
 
 (defun proj-build()
-  (concat "make -j8 " proj-compile-args)
+  (concat (build-cmd) " " proj-compile-args)
 )
 (defun proj-clean()
-  (concat "make clean")
+  (concat (clean-cmd))
 )
 (defun proj-cleanbuild()
-  (concat "make clean\; make -j8" proj-compile-args)
+  (concat (clean-cmd) "\; " (build-cmd) " " proj-compile-args)
 )
 (defun proj-run()
   (if (not proj-run-args)
