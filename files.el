@@ -6,7 +6,7 @@
 (global-set-key (kbd "C-S-o") 'find-file-in-repository)
 
 (require 'treemacs)
-(global-set-key (kbd "C-S-t") 'treemacs)
+(global-set-key (kbd "C-S-t") (lambda() (interactive) (treemacs) (lsp-treemacs-symbols)))
 ;;(semantic-mode)
 
 (require 'recentf)
