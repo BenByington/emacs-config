@@ -13,6 +13,7 @@
 (defun proj-dev00()(interactive) (setq proj-host "pa-dev00"))
 (defun proj-dev01()(interactive) (setq proj-host "pa-dev01"))
 (defun proj-gpu()(interactive) (setq proj-host "rt-gpudev"))
+(defun proj-gpuA100()(interactive) (setq proj-host "kestrel-primary-poc"))
 (defun proj-arch-gcc ()(interactive) (setq proj-arch "gcc"))
 (defun proj-arch-icc ()(interactive) (setq proj-arch "icc"))
 (defun proj-arch-avx ()(interactive) (setq proj-arch "avx512"))
@@ -36,7 +37,7 @@
 (defun proj-acq-build-dir (arch debug) (proj-generic-build-dirs "Sequel/acquisition" arch debug))
 (defun proj-bw-build-dir (arch debug) (proj-generic-build-dirs "Sequel/basewriter" arch debug))
 (defun proj-cc-build-dir (arch debug) (proj-generic-build-dirs "Sequel/common" arch debug))
-(defun proj-cplusplus-build-dir (arch debug) (proj-generic-build-dirs "common/pacbio-cplusplus-api" arch debug))
+(defun proj-cplusplus-build-dir (arch debug) (proj-generic-build-dirs "" arch debug))
 (defun proj-bc-build-dir (arch debug)
     (setq baseDir proj-root)
     (setq relDir "Sequel/basecaller/")
@@ -83,7 +84,7 @@
     (setq cacheDir (expand-file-name (concat "~/.cache/ccls/" proj-subproj)))
     (setq commandDir (file-relative-name (proj-build-dir "gcc" t) proj-root))
     (setq buildDir (proj-build-dir "gcc" t))
-    (setq lsp-clients-clangd-args `("-log=verbose" , 
+    (setq lsp-clients-clangd-args `("-log=info" , 
                                    (concat "--compile-commands-dir=" (expand-file-name buildDir))   
                                    "--all-scopes-completion"
                                    "--completion-style=detailed"
@@ -92,24 +93,58 @@
                                    "--suggest-missing-includes"
                                    "--pch-storage=memory"
                                    "--pretty"
-                                   "-j=4"
+                                   "-j=2"
     ))
-    (message (concat "--compile-commands-dir=" buildDir))
 ;;    (setq ccls-initialization-options `(:cache (:directory , cacheDir) 
 ;;                                        :compilationDatabaseDirectory , commandDir))
     (lsp-restart-workspace-quiet)
 )
 
-(defun proj-web()         (interactive)(setq proj-root "~/primary/") (setq proj-build-system "make") (setq proj-subproj "Webservices") (fset 'proj-build-dir 'proj-web-build-dir)      (proj-update-parse-proj))
-(defun proj-ppa()         (interactive)(setq proj-root "~/primary/") (setq proj-build-system "make") (setq proj-subproj "PPA" )        (fset 'proj-build-dir 'proj-ppa-build-dir)      (proj-update-parse-proj))
-(defun proj-seq-common()  (interactive)(setq proj-root "~/primary/") (setq proj-build-system "make") (setq proj-subproj "Common")      (fset 'proj-build-dir 'proj-cc-build-dir)       (proj-update-parse-proj))
-(defun proj-basecaller()  (interactive)(setq proj-root "~/primary/") (setq proj-build-system "make") (setq proj-subproj "Basecaller")  (fset 'proj-build-dir 'proj-bc-build-dir)       (proj-update-parse-proj))
-(defun proj-basewriter()  (interactive)(setq proj-root "~/primary/") (setq proj-build-system "make") (setq proj-subproj "Basewriter")  (fset 'proj-build-dir 'proj-bw-build-dir)       (proj-update-parse-proj))
-(defun proj-acquisition() (interactive)(setq proj-root "~/primary/") (setq proj-build-system "make") (setq proj-subproj "Acquisition") (fset 'proj-build-dir 'proj-acq-build-dir)      (proj-update-parse-proj))
-(defun proj-cpluspus()    (interactive)(setq proj-root "~/pa-mongo/pa-common/") (setq proj-build-system "make") (setq proj-subproj "CPlusPlusAPI")(fset 'proj-build-dir 'proj-cplusplus-build-dir)(proj-update-parse-proj))
-(defun proj-mongo()       (interactive)(setq proj-root "~/pa-mongo/")           (setq proj-build-system "ninja") (setq proj-subproj "Mongo")       (fset 'proj-build-dir 'proj-mongo-build-dir)    (proj-update-parse-proj))
+(setq web-hist nil)
+(setq ppa-hist nil)
+(setq seq-common-hist nil)
+(setq basecaller-hist nil)
+(setq basewriter-hist nil)
+(setq acquisition-hist nil)
+(setq cplusplus-hist nil)
+(setq mongo-hist nil)
+(setq shapeshift-hist nil)
+
+(require 'savehist)
+(eval-after-load "savehist"
+  '(add-to-list 'savehist-additional-variables 'web-hist))
+(eval-after-load "savehist"
+  '(add-to-list 'savehist-additional-variables 'ppa-hist))
+(eval-after-load "savehist"
+  '(add-to-list 'savehist-additional-variables 'seq-common-hist))
+(eval-after-load "savehist"
+  '(add-to-list 'savehist-additional-variables 'basecaller-hist))
+(eval-after-load "savehist"
+  '(add-to-list 'savehist-additional-variables 'basewriter-hist))
+(eval-after-load "savehist"
+  '(add-to-list 'savehist-additional-variables 'acquisition-hist))
+(eval-after-load "savehist"
+  '(add-to-list 'savehist-additional-variables 'cplusplus-hist))
+(eval-after-load "savehist"
+  '(add-to-list 'savehist-additional-variables 'mongo-hist))
+(eval-after-load "savehist"
+  '(add-to-list 'savehist-additional-variables 'shapeshift-hist))
+
+(savehist-mode 1)
+
+(setq warning-suppress-log-types (list))
+(add-to-list 'warning-suppress-log-types '(defvaralias losing-value run-hist))
+
+(defun proj-web()         (interactive)(setq proj-root "~/primary/")            (setq proj-build-system "make")  (setq proj-subproj "Webservices") (fset 'proj-build-dir 'proj-web-build-dir)       (defvaralias 'run-hist 'web-hist)         (proj-run-args (car run-hist)) (proj-update-parse-proj))
+(defun proj-ppa()         (interactive)(setq proj-root "~/primary/")            (setq proj-build-system "make")  (setq proj-subproj "PPA" )        (fset 'proj-build-dir 'proj-ppa-build-dir)       (defvaralias 'run-hist 'ppa-hist)         (proj-run-args (car run-hist)) (proj-update-parse-proj))
+(defun proj-seq-common()  (interactive)(setq proj-root "~/primary/")            (setq proj-build-system "make")  (setq proj-subproj "Common")      (fset 'proj-build-dir 'proj-cc-build-dir)        (defvaralias 'run-hist 'seq-common-hist)  (proj-run-args (car run-hist)) (proj-update-parse-proj))
+(defun proj-basecaller()  (interactive)(setq proj-root "~/primary/")            (setq proj-build-system "make")  (setq proj-subproj "Basecaller")  (fset 'proj-build-dir 'proj-bc-build-dir)        (defvaralias 'run-hist 'basecaller-hist)  (proj-run-args (car run-hist)) (proj-update-parse-proj))
+(defun proj-basewriter()  (interactive)(setq proj-root "~/primary/")            (setq proj-build-system "make")  (setq proj-subproj "Basewriter")  (fset 'proj-build-dir 'proj-bw-build-dir)        (defvaralias 'run-hist 'basewriter-hist)  (proj-run-args (car run-hist)) (proj-update-parse-proj))
+(defun proj-acquisition() (interactive)(setq proj-root "~/primary/")            (setq proj-build-system "make")  (setq proj-subproj "Acquisition") (fset 'proj-build-dir 'proj-acq-build-dir)       (defvaralias 'run-hist 'acquisition-hist) (proj-run-args (car run-hist)) (proj-update-parse-proj))
+(defun proj-cpluspus()    (interactive)(setq proj-root "~/pa-mongo/pa-common/") (setq proj-build-system "make")  (setq proj-subproj "CPlusPlusAPI")(fset 'proj-build-dir 'proj-cplusplus-build-dir) (defvaralias 'run-hist 'cplusplus-hist)   (proj-run-args (car run-hist)) (proj-update-parse-proj))
+(defun proj-mongo()       (interactive)(setq proj-root "~/pa-mongo/")           (setq proj-build-system "ninja") (setq proj-subproj "Mongo")       (fset 'proj-build-dir 'proj-mongo-build-dir)     (defvaralias 'run-hist 'mongo-hist)       (proj-run-args (car run-hist)) (proj-update-parse-proj))
                                                                                                                                                  
-(defun proj-shapeshift() (interactive) (setq proj-root "~/Shapeshifter") (setq proj-build-system "make") (setq proj-subproj "ShapeShift")  (fset 'proj-build-dir 'proj-shapeshift-build-dir)(proj-update-parse-proj))
+(defun proj-shapeshift() (interactive) (setq proj-root "~/Shapeshifter")        (setq proj-build-system "make")  (setq proj-subproj "ShapeShift")  (fset 'proj-build-dir 'proj-shapeshift-build-dir)(defvaralias 'run-hist 'shapeshift-hist)  (proj-run-args (car run-hist)) (proj-update-parse-proj))
 
 (setq lasterror nil)
 (defun proj-valid()(interactive)
@@ -146,8 +181,10 @@
        (setq proj-compile-args arg)
     )
 )
+
 (setq proj-run-args nil)
-(defun proj-run-args(arg)(interactive (list (read-string "Run Command: " proj-run-args))) 
+(defun proj-run-args(arg)(interactive (list (ivy-read "Run Command: " run-hist :history 'run-hist :preselect 0))) 
+;;(defun proj-run-args(arg)(interactive (list (ivy-read "Run Command: " run-hist :history 'run-hist :preselect 0 :update-fn 'ivy-insert-current))) 
     (if (string= arg "")
        (setq proj-run-args nil)
        (setq proj-run-args arg)
@@ -157,7 +194,7 @@
 (defun build-cmd()
     (if (string= proj-build-system "make")
         (setq return "make -j8")
-        (setq return "CLICOLOR_FORCE=1 ninja -j8")
+        (setq return "CLICOLOR_FORCE=1 ninja -j4")
     )
 )
 

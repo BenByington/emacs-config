@@ -1,8 +1,9 @@
 
-(setq gc-cons-threshold 50000000)
+(setq gc-cons-threshold 200000000)
+(setq read-process-output-max 10000000)
 
 (require 'cc-mode)
-(setq lsp-clients-clangd-executable "/home/UNIXHOME/bbyington/llvm-install-11/bin/clangd")
+(setq lsp-clients-clangd-executable "/home/UNIXHOME/bbyington/llvm-install-12/bin/clangd")
 
 (require 'lsp-mode)
 (setq lsp-enable-on-type-formatting nil)
@@ -53,7 +54,7 @@
   (symbol-value 'ret)
 )
 
-(setq lsp-log-io t)
+(setq lsp-log-io nil)
 
 ;;(evil-set-initial-state 'ccls-tree-mode 'emacs)
 
