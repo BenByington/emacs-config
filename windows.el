@@ -22,8 +22,7 @@
 (defun detect-mini-buffer (char) (minibufferp))
 (setq electric-pair-inhibit-predicate #'detect-mini-buffer)
 
-;; If slowdowns detected, upgrade to Emacs 26 and use 'display-line-numbers-mode
-(global-linum-mode)
+(global-display-line-numbers-mode)
 
 (require 'ivy)
 (ivy-mode 1)
