@@ -93,7 +93,7 @@
                                    "--suggest-missing-includes"
                                    "--pch-storage=memory"
                                    "--pretty"
-                                   "-j=2"
+                                   "-j=4"
     ))
 ;;    (setq ccls-initialization-options `(:cache (:directory , cacheDir) 
 ;;                                        :compilationDatabaseDirectory , commandDir))

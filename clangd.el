@@ -37,6 +37,7 @@
                              (cons "-ccbin=gcc" "")
                              (cons "-x cu" "-x cuda --no-cuda-version-check -nocudalib")
                              (cons "-isystem=" "-I")
+                             (cons "-t 0" "")
                              (cons "--expt-relaxed-constexpr" "")
                              (cons "--default-stream per-thread" "")
                              (cons "-gencode arch=.*?,code=" "--cuda-gpu-arch=")
