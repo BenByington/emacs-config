@@ -3,7 +3,8 @@
 (setq read-process-output-max 10000000)
 
 (require 'cc-mode)
-(setq lsp-clients-clangd-executable "/home/UNIXHOME/bbyington/llvm-install-12/bin/clangd")
+(custom-set-variables '(c-noise-macro-names '("constexpr")))
+(setq lsp-clients-clangd-executable "/home/UNIXHOME/bbyington/llvm-13/bin/clangd")
 
 (require 'lsp-mode)
 (setq lsp-enable-on-type-formatting nil)
@@ -35,12 +36,15 @@
 
 (setq arg-replacements (list (cons "-G " "")
                              (cons "-ccbin=gcc" "")
+                             (cons "-Xcompiler" "")
+                             (cons "-dc" "")
                              (cons "-x cu" "-x cuda --no-cuda-version-check -nocudalib")
                              (cons "-isystem=" "-I")
                              (cons "-t 0" "")
                              (cons "--expt-relaxed-constexpr" "")
                              (cons "--default-stream per-thread" "")
-                             (cons "-gencode arch=.*?,code=" "--cuda-gpu-arch=")
+                             (cons "--generate-code=arch=.*?.code=\\[.*?,(.*?)\\]" "--cuda-gpu-arch=$1")
+                             (cons "-forward-unknown-to-host-compiler" "")
                              (cons "--compiler-options=\\\\\\\".*?\\\\\\\"" "\\1")
                        )
 )
