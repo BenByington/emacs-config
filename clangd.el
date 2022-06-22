@@ -82,3 +82,8 @@
 (define-key c++-mode-map (kbd "<M-right>") nil)
 (define-key c++-mode-map (kbd "<M-left>") 'lsp-ui-peek-jump-backward)
 (define-key c++-mode-map (kbd "<M-right>") 'lsp-ui-peek-jump-forward)
+(with-eval-after-load 'company
+  (define-key company-active-map (kbd "<return>") nil)
+  (define-key company-active-map (kbd "RET") nil)
+  (define-key company-active-map (kbd "<tab>") 'company-complete-selection)
+  (define-key company-active-map (kbd "TAB") 'company-complete-selection))
