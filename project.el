@@ -61,7 +61,7 @@
           (setq return (concat baseDir relDir archDir buildDir)))
 )
 (defun proj-web-build-dir (arch debug) (proj-generic-build-dirs "Sequel/webservices" arch debug))
-(defun proj-ppa-build-dir (arch debug) (proj-generic-build-dirs "Sequel/postprimary" arch debug))
+(defun proj-ppa-build-dir (arch debug) (proj-generic-build-dirs2 "Sequel/postprimary" arch debug))
 (defun proj-acq-build-dir (arch debug) (proj-generic-build-dirs2 "Sequel/acquisition" arch debug))
 (defun proj-bw-build-dir (arch debug) (proj-generic-build-dirs "Sequel/basewriter" arch debug))
 (defun proj-cc-build-dir (arch debug) (proj-generic-build-dirs "Sequel/common" arch debug))
@@ -81,6 +81,7 @@
           (setq return (concat baseDir relDir archDir buildDir)))
 )
 (defun proj-mongo-build-dir (arch debug) (proj-generic-build-dirs-new "basecaller" arch debug))
+(defun proj-calib-build-dir (arch debug) (proj-generic-build-dirs-new "pa-cal" arch debug))
 
 (defun proj-shapeshift-build-dir (arch debug)
     (setq baseDir proj-root)
@@ -113,8 +114,6 @@
                                    "--pretty"
                                    "-j=4"
     ))
-;;    (setq ccls-initialization-options `(:cache (:directory , cacheDir) 
-;;                                        :compilationDatabaseDirectory , commandDir))
     (lsp-restart-workspace-quiet)
 )
 
@@ -127,6 +126,7 @@
 (setq cplusplus-hist nil)
 (setq hwmongo-hist nil)
 (setq mongo-hist nil)
+(setq calib-hist nil)
 (setq shapeshift-hist nil)
 
 (require 'savehist)
@@ -149,6 +149,8 @@
 (eval-after-load "savehist"
   '(add-to-list 'savehist-additional-variables 'mongo-hist))
 (eval-after-load "savehist"
+  '(add-to-list 'savehist-additional-variables 'calib-hist))
+(eval-after-load "savehist"
   '(add-to-list 'savehist-additional-variables 'shapeshift-hist))
 
 (savehist-mode 1)
@@ -162,9 +164,10 @@
 (defun proj-basecaller()  (interactive)(setq proj-root "~/primary/")            (setq proj-build-system "make")  (setq proj-subproj "Basecaller")  (fset 'proj-build-dir 'proj-bc-build-dir)        (defvaralias 'run-hist 'basecaller-hist)  (proj-run-args (car run-hist)) (proj-update-parse-proj))
 (defun proj-basewriter()  (interactive)(setq proj-root "~/primary/")            (setq proj-build-system "make")  (setq proj-subproj "Basewriter")  (fset 'proj-build-dir 'proj-bw-build-dir)        (defvaralias 'run-hist 'basewriter-hist)  (proj-run-args (car run-hist)) (proj-update-parse-proj))
 (defun proj-acquisition() (interactive)(setq proj-root "~/primary/")            (setq proj-build-system "make")  (setq proj-subproj "Acquisition") (fset 'proj-build-dir 'proj-acq-build-dir)       (defvaralias 'run-hist 'acquisition-hist) (proj-run-args (car run-hist)) (proj-update-parse-proj))
-(defun proj-cpluspus()    (interactive)(setq proj-root "~/pa-kestrel/pa-common/") (setq proj-build-system "make")  (setq proj-subproj "CPlusPlusAPI")(fset 'proj-build-dir 'proj-cplusplus-build-dir) (defvaralias 'run-hist 'cplusplus-hist)   (proj-run-args (car run-hist)) (proj-update-parse-proj))
+(defun proj-cpluspus()    (interactive)(setq proj-root "~/pa-kestrel/pa-common/") (setq proj-build-system "ninja")  (setq proj-subproj "CPlusPlusAPI")(fset 'proj-build-dir 'proj-cplusplus-build-dir) (defvaralias 'run-hist 'cplusplus-hist)   (proj-run-args (car run-hist)) (proj-update-parse-proj))
 (defun proj-hwmongo()     (interactive)(setq proj-root "~/pa-kestrel/hw-mongo/")  (setq proj-build-system "ninja") (setq proj-subproj "HwMongo")(fset 'proj-build-dir 'proj-hwmongo-build-dir) (defvaralias 'run-hist 'hw-mongo-hist)   (proj-run-args (car run-hist)) (proj-update-parse-proj))
 (defun proj-mongo()       (interactive)(setq proj-root "~/pa-kestrel/")         (setq proj-build-system "ninja") (setq proj-subproj "Mongo")       (fset 'proj-build-dir 'proj-mongo-build-dir)     (defvaralias 'run-hist 'mongo-hist)       (proj-run-args (car run-hist)) (proj-update-parse-proj))
+(defun proj-calib()       (interactive)(setq proj-root "~/pa-kestrel/")         (setq proj-build-system "ninja") (setq proj-subproj "Calib")       (fset 'proj-build-dir 'proj-calib-build-dir)     (defvaralias 'run-hist 'calib-hist)       (proj-run-args (car run-hist)) (proj-update-parse-proj))
                                                                                                                                                  
 (defun proj-shapeshift() (interactive) (setq proj-root "~/Shapeshifter")        (setq proj-build-system "make")  (setq proj-subproj "ShapeShift")  (fset 'proj-build-dir 'proj-shapeshift-build-dir)(defvaralias 'run-hist 'shapeshift-hist)  (proj-run-args (car run-hist)) (proj-update-parse-proj))
 
@@ -343,6 +346,7 @@
         :notify (lambda (widget &rest ignore)
 		    (cond ((string= (widget-value widget) "PPA") (proj-ppa))
 			  ((string= (widget-value widget) "Mongo") (proj-mongo))
+			  ((string= (widget-value widget) "Calib") (proj-calib))
 			  ((string= (widget-value widget) "Basecaller") (proj-basecaller))
 			  ((string= (widget-value widget) "Basewriter") (proj-basewriter))
 			  ((string= (widget-value widget) "Acquisition") (proj-acquisition))
