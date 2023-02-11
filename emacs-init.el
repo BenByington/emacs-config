@@ -26,6 +26,44 @@
   kept-new-versions 20   ; how many of the newest versions to keep
   kept-old-versions 5    ; and how many of the old
 )
+
+;; Put this elsewhere?
+(setq latex-run-command "pdflatex")
+
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 6))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
+(use-package markdown-mode
+  :ensure t
+  :mode ("README\\.md\\'" . gfm-mode)
+  :init (setq markdown-command '("pandoc" "--standalone" "-c /home/UNIXHOME/bbyington/emacs-config/styling.css")))
+
+
+(use-package markdown-xwidget
+  :after markdown-mode
+  :straight (markdown-xwidget
+             :type git
+             :host github
+             :repo "cfclrk/markdown-xwidget"
+             :files (:defaults "resources"))
+  :bind (:map markdown-mode-command-map
+              ("x" . markdown-xwidget-preview-mode))
+  :custom
+  (markdown-xwidget-command "pandoc")
+  (markdown-xwidget-github-theme "dark")
+  (markdown-xwidget-mermaid-theme "default")
+  (markdown-xwidget-code-block-theme "dark"))
+
 (auto-save-visited-mode)
 ;; This would be nice to stop having save files in with the source, but
 ;; the current version doesn't work (tries to add files to directories
