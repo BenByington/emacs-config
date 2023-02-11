@@ -2,6 +2,8 @@
 
 (add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
 ;;(load-theme 'dracula t)
+
+(use-package solarized-theme)
 (load-theme 'solarized-dark-high-contrast t)
 
 (require 'popwin)

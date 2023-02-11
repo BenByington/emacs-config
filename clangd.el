@@ -4,7 +4,7 @@
 
 (require 'cc-mode)
 (custom-set-variables '(c-noise-macro-names '("constexpr")))
-(setq lsp-clients-clangd-executable "/home/UNIXHOME/bbyington/llvm-13/bin/clangd")
+(setq lsp-clients-clangd-executable "/home/UNIXHOME/bbyington/llvm-15/bin/clangd")
 
 (require 'lsp-mode)
 (setq lsp-enable-on-type-formatting nil)
@@ -20,10 +20,13 @@
 (lsp-treemacs-sync-mode 1)
 (setq treemacs-wrap-around t)
 
+;; The config to disableheaderline breadcrumbs is maybe in response to a bug?
+;; I didn't enable it, and I'm not sure it's supposed to be enabled by default
 (use-package lsp-mode
     :hook ((c++-mode . lsp)
            (lsp-mode . lsp-enable-which-key-integration)
            (lsp-mode . lsp-ui-mode))
+    :config (setq lsp-headerline-breadcrumb-enable nil)
     :commands lsp)
 
 ;; optionally
