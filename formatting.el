@@ -16,6 +16,7 @@
 (defun my-show-white()
     (setq show-trailing-whitespace t))
 (add-hook 'c++-mode-hook 'my-show-white)
+(add-hook 'go-mode-hook 'my-show-white)
 
 (require 'ws-butler)
 (add-hook 'c++-mode-hook 'ws-butler-mode)

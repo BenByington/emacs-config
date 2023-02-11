@@ -32,3 +32,19 @@
 ;; that don't exist)
 ;;(setq auto-save-file-name-transforms `((".*" "~/.emacs.d/saves/" t)))
 
+;; Go - lsp-mode
+;; Set up before-save hooks to format buffer and add/delete imports.
+;; (defun lsp-go-install-save-hooks ()
+;;   (add-hook 'before-save-hook #'lsp-format-buffer t t)
+;;   (add-hook 'before-save-hook #'lsp-organize-imports t t))
+;; (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+
+;; Start LSP Mode and YASnippet mode
+(add-hook 'go-mode-hook #'lsp-deferred)
+(add-hook 'go-mode-hook #'yas-minor-mode)
+
+(require 'go-mode)
+(define-key go-mode-map (kbd "<M-left>") nil)
+(define-key go-mode-map (kbd "<M-right>") nil)
+(define-key go-mode-map (kbd "<M-left>") 'lsp-ui-peek-jump-backward)
+(define-key go-mode-map (kbd "<M-right>") 'lsp-ui-peek-jump-forward)
