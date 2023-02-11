@@ -82,6 +82,7 @@
 )
 (defun proj-mongo-build-dir (arch debug) (proj-generic-build-dirs-new "basecaller" arch debug))
 (defun proj-calib-build-dir (arch debug) (proj-generic-build-dirs-new "pa-cal" arch debug))
+(defun proj-pawnee-build-dir (arch debug) (proj-generic-build-dirs-new "pawnee" arch debug))
 
 (defun proj-shapeshift-build-dir (arch debug)
     (setq baseDir proj-root)
@@ -126,6 +127,7 @@
 (setq cplusplus-hist nil)
 (setq hwmongo-hist nil)
 (setq mongo-hist nil)
+(setq pawnee-hist nil)
 (setq calib-hist nil)
 (setq shapeshift-hist nil)
 
@@ -149,6 +151,8 @@
 (eval-after-load "savehist"
   '(add-to-list 'savehist-additional-variables 'mongo-hist))
 (eval-after-load "savehist"
+  '(add-to-list 'savehist-additional-variables 'pawnee-hist))
+(eval-after-load "savehist"
   '(add-to-list 'savehist-additional-variables 'calib-hist))
 (eval-after-load "savehist"
   '(add-to-list 'savehist-additional-variables 'shapeshift-hist))
@@ -167,6 +171,7 @@
 (defun proj-cpluspus()    (interactive)(setq proj-root "~/pa-kestrel/pa-common/") (setq proj-build-system "ninja")  (setq proj-subproj "CPlusPlusAPI")(fset 'proj-build-dir 'proj-cplusplus-build-dir) (defvaralias 'run-hist 'cplusplus-hist)   (proj-run-args (car run-hist)) (proj-update-parse-proj))
 (defun proj-hwmongo()     (interactive)(setq proj-root "~/pa-kestrel/hw-mongo/")  (setq proj-build-system "ninja") (setq proj-subproj "HwMongo")(fset 'proj-build-dir 'proj-hwmongo-build-dir) (defvaralias 'run-hist 'hw-mongo-hist)   (proj-run-args (car run-hist)) (proj-update-parse-proj))
 (defun proj-mongo()       (interactive)(setq proj-root "~/pa-kestrel/")         (setq proj-build-system "ninja") (setq proj-subproj "Mongo")       (fset 'proj-build-dir 'proj-mongo-build-dir)     (defvaralias 'run-hist 'mongo-hist)       (proj-run-args (car run-hist)) (proj-update-parse-proj))
+(defun proj-pawnee()      (interactive)(setq proj-root "~/pawnee/")             (setq proj-build-system "ninja") (setq proj-subproj "Pawnee")       (fset 'proj-build-dir 'proj-pawnee-build-dir)     (defvaralias 'run-hist 'pawnee-hist)       (proj-run-args (car run-hist)) (proj-update-parse-proj))
 (defun proj-calib()       (interactive)(setq proj-root "~/pa-kestrel/")         (setq proj-build-system "ninja") (setq proj-subproj "Calib")       (fset 'proj-build-dir 'proj-calib-build-dir)     (defvaralias 'run-hist 'calib-hist)       (proj-run-args (car run-hist)) (proj-update-parse-proj))
                                                                                                                                                  
 (defun proj-shapeshift() (interactive) (setq proj-root "~/Shapeshifter")        (setq proj-build-system "make")  (setq proj-subproj "ShapeShift")  (fset 'proj-build-dir 'proj-shapeshift-build-dir)(defvaralias 'run-hist 'shapeshift-hist)  (proj-run-args (car run-hist)) (proj-update-parse-proj))
@@ -346,6 +351,7 @@
         :notify (lambda (widget &rest ignore)
 		    (cond ((string= (widget-value widget) "PPA") (proj-ppa))
 			  ((string= (widget-value widget) "Mongo") (proj-mongo))
+			  ((string= (widget-value widget) "Pawnee") (proj-pawnee))
 			  ((string= (widget-value widget) "Calib") (proj-calib))
 			  ((string= (widget-value widget) "Basecaller") (proj-basecaller))
 			  ((string= (widget-value widget) "Basewriter") (proj-basewriter))
@@ -359,6 +365,7 @@
 		)
         '(item "PPA" )
         '(item "Mongo" )
+        '(item "Pawnee" )
         '(item "Basecaller")
         '(item "Basewriter")
         '(item "Acquisition")
