@@ -7,6 +7,9 @@
 (add-to-list 'auto-mode-alist '("\\.cu\\'" . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.cuh\\'" . c++-mode))
 
+(add-hook 'text-mode-hook 'flyspell-mode)
+(add-hook 'prog-mode-hook 'flyspell-prog-mode)
+
 (load-file "~/emacs-config/util.el")
 (load-file "~/emacs-config/windows.el")
 (load-file "~/emacs-config/compile.el")
